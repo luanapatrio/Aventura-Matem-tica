@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Aventura Matemática MVP</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <button class="access" onclick="openAccess()" aria-label="Abrir acessibilidade">
+        <img src="/img/acessibilidade.png" alt="Acessibilidade">
+    </button>
+    <main id="app"></main>
+    <div id="accessModal" class="modal hidden">
+        <div class="card"><button class="close" onclick="openAccess()">×</button>
+            <h2>♿ Acessibilidade</h2><label><input id="contrast" type="checkbox" onchange="toggleContrast()"> Alto
+                contraste</label><label>Tamanho do texto <button onclick="fontSize(-1)">A-</button> <button
+                    onclick="fontSize(1)">A+</button></label><label><input id="narration" type="checkbox"> Narração
+                automática</label>
+        </div>
+    </div>
+    <script src="/js/app.js"></script>
+</body>
+
+</html>
