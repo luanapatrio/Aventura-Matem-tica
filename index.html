@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aventura Matemática — A Missão de Byte</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div id="game-container" aria-label="Área do jogo Aventura Matemática"></div>
+  <section id="student-menu" aria-label="Menu inicial do aluno">
+    <div class="menu-card">
+      <h1>🚀 Aventura Matemática</h1>
+      <p>Ajude Byte a resolver desafios, aprender com cada tentativa e avançar pelas fases!</p>
+      <div class="menu-row">
+        <label>Seu apelido
+          <input id="nickname" maxlength="18" placeholder="Ex.: Estrela123" autocomplete="off">
+        </label>
+        <label>Escolha seu avatar
+          <select id="avatar">
+            <option value="🤖 Byte">🤖 Byte</option>
+            <option value="🚀 Explorador">🚀 Explorador</option>
+            <option value="⭐ Estrela">⭐ Estrela</option>
+            <option value="🐱 Gatinho">🐱 Gatinho</option>
+            <option value="🦊 Raposa">🦊 Raposa</option>
+          </select>
+        </label>
+        <label>Código da sala (se sua turma tiver)
+          <input id="room-code" maxlength="16" placeholder="Ex.: TURMA4A" autocomplete="off">
+        </label>
+      </div>
+      <div class="menu-row">
+        <button id="start-button">▶ Iniciar jogo</button>
+        <button id="instructions-button" class="secondary">📖 Instruções + áudio</button>
+      </div>
+      <div id="instructions" role="region" aria-live="polite">
+        <strong>Como jogar</strong>
+        <p>Use as setas do teclado para andar e pular. A seta para baixo troca o módulo do Byte. Colete os chips,
+          responda às perguntas e chegue à porta. Se errar, tudo bem: leia ou ouça a explicação e continue tentando.</p>
+        <p>O módulo FOGO atravessa a lava; o módulo ÁGUA atravessa a água. Pule por cima do ácido verde.</p>
+      </div>
+      <p id="saved-progress" aria-live="polite"></p>
+      <p id="status" aria-live="polite"></p>
+    </div>
+  </section>
+  <button id="accessibility-toggle" type="button" aria-label="Abrir opções de acessibilidade" aria-expanded="false"
+    aria-controls="accessibility-panel" title="Acessibilidade">♿</button>
+  <aside id="accessibility-panel" aria-label="Opções de acessibilidade" hidden>
+    <h2>♿ Acessibilidade</h2>
+    <button id="contrast-button" type="button" aria-pressed="false">◐ Alto contraste</button>
+    <button id="dyslexia-button" type="button" aria-pressed="false">Aa Fonte legível</button>
+    <button id="read-button" type="button">🔊 Ouvir instruções</button>
+    <button id="accessibility-close" class="accessibility-close" type="button">Fechar opções</button>
+  </aside>
+  <script src="aventura_matematica.js"></script>
+  <script>
+    const profileKey = 'aventuraMatematicaProfile';
+    const savedProfile = JSON.parse(localStorage.getItem(profileKey) || '{}');
+    const nickname = document.getElementById('nickname');
+    const avatar = document.getElementById('avatar');
+    const roomCode = document.getElementById('room-code');
+    nickname.value = savedProfile.nickname || '';
+    avatar.value = savedProfile.avatar || '🤖 Byte';
+    roomCode.value = savedProfile.roomCode || '';
+    const progress = JSON.parse(localStorage.getItem('aventuraMatematicaProgress') || '{"completedLevels":[],"score":0,"achievements":[]}');
+    document.getElementById('saved-progress').textContent = `Seu progresso neste dispositivo: ${progress.completedLevels.length || 0} fase(s) concluída(s) · ${progress.score || 0} pontos.`;
+    const instructions = document.getElementById('instructions');
+    const accessibilityToggle = document.getElementById('accessibility-toggle');
+    const accessibilityPanel = document.getElementById('accessibility-panel');
+    function setAccessibilityPanel(open) {
+      accessibilityPanel.hidden = !open;
+      accessibilityToggle.setAttribute('aria-expanded', String(open));
+      accessibilityToggle.setAttribute('aria-label', open ? 'Fechar opções de acessibilidade' : 'Abrir opções de acessibilidade');
+      if (open) document.getElementById('contrast-button').focus();
+      else accessibilityToggle.focus();
+    }
+    accessibilityToggle.addEventListener('click', () => setAccessibilityPanel(accessibilityPanel.hidden));
+    document.getElementById('accessibility-close').addEventListener('click', () => setAccessibilityPanel(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !accessibilityPanel.hidden) setAccessibilityPanel(false);
+    });
+    document.getElementById('instructions-button').addEventListener('click', () => {
+      instructions.style.display = instructions.style.display === 'block' ? 'none' : 'block';
+      if (instructions.style.display === 'block') speakText(instructions.innerText);
+    });
+    document.getElementById('read-button').addEventListener('click', () => speakText(instructions.innerText || 'Use as setas para andar e pular. Colete os chips, responda às perguntas e chegue à porta. Errar faz parte de aprender.'));
+    document.getElementById('contrast-button').addEventListener('click', (e) => {
+      const active = document.body.classList.toggle('high-contrast'); e.currentTarget.setAttribute('aria-pressed', String(active));
+      const canvas = document.querySelector('#game-container canvas'); if (canvas) canvas.style.filter = active ? 'contrast(1.5) saturate(1.2)' : '';
+    });
+    document.getElementById('dyslexia-button').addEventListener('click', (e) => {
+      const active = document.body.classList.toggle('dyslexia-font'); e.currentTarget.setAttribute('aria-pressed', String(active));
+      if (typeof setGameFont === 'function') setGameFont(active);
+    });
+    document.getElementById('start-button').addEventListener('click', () => {
+      const name = nickname.value.trim();
+      if (!name) {document.getElementById('status').textContent = 'Escolha um apelido para começar.'; nickname.focus(); return;}
+      localStorage.setItem(profileKey, JSON.stringify({nickname: name, avatar: avatar.value, roomCode: roomCode.value.trim()}));
+      if (typeof window.startAventuraGame === 'function') {
+        document.getElementById('student-menu').style.display = 'none';
+        window.startAventuraGame();
+      } else {document.getElementById('status').textContent = 'O jogo ainda está carregando. Aguarde um instante e clique em Iniciar novamente.';}
+    });
+  </script>
+</body>
+
+</html>

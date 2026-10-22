@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura Matemática — Painel do Professor</title>
+    <link rel="stylesheet" href="professor.css">
+</head>
+
+<body>
+    <header>
+        <h1> Painel do Professor</h1>
+        <p>Configure turmas e desafios e acompanhe o progresso salvo neste dispositivo.</p>
+    </header>
+    <main>
+        <section id="login" class="panel">
+            <h2>Acesso do professor</h2>
+
+            <label>
+                E-mail
+                <input id="email" type="email" autocomplete="username" placeholder="professor@escola.com">
+            </label>
+
+            <label>
+                Senha
+                <input id="password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+            </label>
+
+            <button id="login-button">Entrar</button>
+            <p id="login-error" role="alert"></p>
+        </section>
+        <div id="dashboard" class="hidden">
+            <section class="panel">
+                <h2>Visão geral</h2>
+                <div class="grid">
+                    <div class="item">
+                        <div class="muted">Fases concluídas registradas neste navegador</div>
+                        <div id="completed" class="stat">0</div>
+                    </div>
+                    <div class="item">
+                        <div class="muted">Maior pontuação registrada neste navegador</div>
+                        <div id="score" class="stat">0</div>
+                    </div>
+                    <div class="item">
+                        <div class="muted">Conquistas</div>
+                        <div id="achievements" class="stat">0</div>
+                    </div>
+                </div>
+                <p class="muted">Os dados ficam no armazenamento local do navegador. Eles não são enviados
+                    automaticamente para a professora nem sincronizados entre dispositivos.</p>
+            </section>
+            <section class="panel">
+                <h2>Cadastrar turma</h2>
+                <div class="grid"><label>Nome da turma<input id="class-name"
+                            placeholder="Ex.: 4º ano A"></label><label>Código da sala<input id="class-code"
+                            maxlength="16" placeholder="Ex.: TURMA4A"></label></div><button id="save-class">Salvar
+                    turma</button>
+                <div id="class-list"></div>
+            </section>
+            <section class="panel">
+                <h2>Criar desafio personalizado</h2>
+                <p class="muted">Os desafios personalizados são usados pelo jogo no mesmo navegador. Cada pergunta
+                    precisa de três alternativas e uma resposta correta igual a uma das alternativas.</p>
+                <div class="grid"><label>Fase<select id="question-level">
+                            <option value="1">Fase 1</option>
+                            <option value="2">Fase 2</option>
+                            <option value="3">Fase 3</option>
+                            <option value="4">Fase 4</option>
+                            <option value="5">Fase bônus</option>
+                        </select></label><label>Dificuldade<select id="difficulty">
+                            <option>Fácil</option>
+                            <option selected>Média</option>
+                            <option>Desafio</option>
+                        </select></label></div><label>Pergunta<textarea id="question-text" rows="2"
+                        placeholder="Escreva o enunciado"></textarea></label>
+                <div class="grid"><label>Alternativa A<input id="option-a"></label><label>Alternativa B<input
+                            id="option-b"></label><label>Alternativa C<input id="option-c"></label><label>Resposta
+                        correta<select id="correct-option">
+                            <option value="a">Alternativa A</option>
+                            <option value="b">Alternativa B</option>
+                            <option value="c">Alternativa C</option>
+                        </select></label></div><button id="save-question">Salvar desafio</button><button
+                    id="clear-questions" class="secondary">Limpar desafios personalizados</button>
+                <div id="question-list"></div>
+            </section>
+            <section class="panel">
+                <h2>Desempenho e histórico</h2>
+                <div id="performance"></div>
+                <p class="muted">Para acompanhar vários alunos individualmente em diferentes aparelhos, será necessário
+                    conectar este painel a uma base de dados e implementar login/código de sala no servidor.</p>
+            </section>
+            <button class="secondary" id="logout">Sair do painel</button>
+        </div>
+    </main>
+    <script>
+        const $ = id => document.getElementById(id); const read = (key, fallback) => {try {return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback))} catch (e) {return fallback} }; const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+        $('login-button').onclick = () => {if ($('pin').value === '1234') {$('login').classList.add('hidden'); $('dashboard').classList.remove('hidden'); render()} else $('login-error').textContent = 'PIN incorreto. Tente novamente.'};
+        $('logout').onclick = () => {$('dashboard').classList.add('hidden'); $('login').classList.remove('hidden'); $('pin').value = ''};
+        $('save-class').onclick = () => {const name = $('class-name').value.trim(), code = $('class-code').value.trim().toUpperCase(); if (!name || !code) {alert('Preencha o nome da turma e o código.'); return } const classes = read('aventuraTeacherClasses', []); if (classes.some(c => c.code === code)) {alert('Esse código já está cadastrado.'); return } classes.push({name, code, createdAt: new Date().toLocaleDateString('pt-BR')}); write('aventuraTeacherClasses', classes); $('class-name').value = ''; $('class-code').value = ''; renderClasses()};
+        $('save-question').onclick = () => {const q = $('question-text').value.trim(), a = $('option-a').value.trim(), b = $('option-b').value.trim(), c = $('option-c').value.trim(); if (!q || !a || !b || !c) {alert('Preencha a pergunta e as três alternativas.'); return } const key = $('correct-option').value; const question = {q, options: [a, b, c], answer: ({a, b, c})[key], difficulty: $('difficulty').value}; const all = read('aventuraTeacherQuestions', {}); const level = $('question-level').value; all[level] = all[level] || []; all[level].push(question); write('aventuraTeacherQuestions', all); $('question-text').value = ''; $('option-a').value = ''; $('option-b').value = ''; $('option-c').value = ''; renderQuestions()};
+        $('clear-questions').onclick = () => {if (confirm('Apagar todos os desafios personalizados? O jogo voltará às perguntas padrão.')) {localStorage.removeItem('aventuraTeacherQuestions'); renderQuestions()} };
+        function renderClasses() {const classes = read('aventuraTeacherClasses', []); $('class-list').innerHTML = classes.length ? '<h3>Turmas cadastradas</h3>' + classes.map(c => `<div class="item"><strong>${escapeHtml(c.name)}</strong> — código <strong>${escapeHtml(c.code)}</strong> <span class="muted">(${escapeHtml(c.createdAt)})</span></div>`).join('') : '<p class="muted">Nenhuma turma cadastrada ainda.</p>'}
+        function renderQuestions() {const all = read('aventuraTeacherQuestions', {}); let html = ''; Object.keys(all).sort().forEach(level => {(all[level] || []).forEach((q, i) => {html += `<div class="item"><strong>Fase ${level}:</strong> ${escapeHtml(q.q)}<br><span class="muted">${q.options.map(escapeHtml).join(' · ')} | correta: ${escapeHtml(q.answer)}</span></div>`})}); $('question-list').innerHTML = html || '<p class="muted">Nenhum desafio personalizado cadastrado.</p>'}
+        function render() {const p = read('aventuraMatematicaProgress', {completedLevels: [], score: 0, achievements: []}); $('completed').textContent = (p.completedLevels || []).length; $('score').textContent = p.score || 0; $('achievements').textContent = (p.achievements || []).length; $('performance').innerHTML = `<div class="item"><strong>Progresso salvo neste navegador</strong><p>Fases: ${escapeHtml((p.completedLevels || []).join(', ') || 'Ainda não há fases concluídas')}</p><p>Pontuação: ${Number(p.score) || 0}</p><p>Conquistas: ${escapeHtml((p.achievements || []).join(', ') || 'Nenhuma registrada')}</p></div>`; renderClasses(); renderQuestions()}
+        function escapeHtml(value) {return String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]))}
+    </script>
+    <script type="module" src="professor.js"></script>
+
+</body>
+
+</html>
