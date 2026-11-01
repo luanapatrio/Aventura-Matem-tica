@@ -1,6 +1,21 @@
 
 import { supabase } from './supabase-client.js';
+function showToast(message, type = 'success') {
+    const toastElement = $('successToast');
+    const toastMessage = $('toastMessage');
 
+    toastMessage.textContent = message;
+
+    toastElement.className =
+        `toast align-items-center text-bg-${type} border-0`;
+
+    const toast = bootstrap.Toast.getOrCreateInstance(
+        toastElement,
+        { delay: 3500 }
+    );
+
+    toast.show();
+}
 const $ = (id) => document.getElementById(id);
 
 const read = (key, fallback) => {
@@ -25,13 +40,6 @@ function escapeHtml(value) {
         '"': '&quot;',
         "'": '&#39;'
     })[c]);
-}
-
-function showDashboard() {
-    $('login').classList.add('hidden');
-    $('dashboard').classList.remove('hidden');
-    $('login-error').textContent = '';
-    render();
 }
 
 function showLogin() {
@@ -157,49 +165,118 @@ $('save-class').addEventListener('click', async () => {
 
 
 
-$('save-question').addEventListener('click', () => {
+
+$('save-question').addEventListener('click', async () => {
     const q = $('question-text').value.trim();
     const a = $('option-a').value.trim();
     const b = $('option-b').value.trim();
     const c = $('option-c').value.trim();
+
+    const key = $('correct-option').value;
+    const level = Number($('question-level').value);
+    const difficulty = $('difficulty').value;
 
     if (!q || !a || !b || !c) {
         alert('Preencha a pergunta e as três alternativas.');
         return;
     }
 
-    const key = $('correct-option').value;
-    const question = {
-        q,
-        options: [a, b, c],
-        answer: ({ a, b, c })[key],
-        difficulty: $('difficulty').value
-    };
+    if (!['a', 'b', 'c'].includes(key)) {
+        alert('Selecione a alternativa correta.');
+        return;
+    }
 
-    const all = read('aventuraTeacherQuestions', {});
-    const level = $('question-level').value;
+    const button = $('save-question');
+    button.disabled = true;
+    button.textContent = 'Salvando...';
 
-    all[level] = all[level] || [];
-    all[level].push(question);
+    try {
+        const { data: authData, error: authError } =
+            await supabase.auth.getUser();
 
-    write('aventuraTeacherQuestions', all);
+        if (authError) throw authError;
 
-    $('question-text').value = '';
-    $('option-a').value = '';
-    $('option-b').value = '';
-    $('option-c').value = '';
+        const user = authData.user;
 
-    renderQuestions();
-});
+        if (!user) {
+            throw new Error('Sua sessão expirou. Entre novamente.');
+        }
 
-$('clear-questions').addEventListener('click', () => {
-    if (confirm(
-        'Apagar todos os desafios personalizados? O jogo voltará às perguntas padrão.'
-    )) {
-        localStorage.removeItem('aventuraTeacherQuestions');
-        renderQuestions();
+        const { error } = await supabase
+            .from('questions')
+            .insert({
+                teacher_id: user.id,
+                level: level,
+                difficulty: difficulty,
+                prompt: q,
+                option_a: a,
+                option_b: b,
+                option_c: c,
+                correct_option: key
+            });
+
+        if (error) throw error;
+
+        $('question-text').value = '';
+        $('option-a').value = '';
+        $('option-b').value = '';
+        $('option-c').value = '';
+
+        await renderQuestions();
+
+        showToast('Pergunta cadastrada com sucesso!');
+
+    } catch (error) {
+        console.error('Erro ao salvar pergunta:', error);
+
+        alert(
+            'Não foi possível salvar a pergunta. Confira o Console (F12).'
+        );
+
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Salvar pergunta';
     }
 });
+
+
+$('clear-questions').addEventListener('click', async () => {
+    const confirmar = confirm(
+        'Deseja apagar todas as suas perguntas personalizadas? Essa ação não pode ser desfeita.'
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const { data: authData, error: authError } =
+            await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        const user = authData.user;
+
+        if (!user) {
+            throw new Error('Entre novamente para continuar.');
+        }
+
+        const { error } = await supabase
+            .from('questions')
+            .delete()
+            .eq('teacher_id', user.id);
+
+        if (error) throw error;
+
+        await renderQuestions();
+
+        alert('Suas perguntas personalizadas foram apagadas!');
+
+    } catch (error) {
+        console.error('Erro ao apagar perguntas:', error);
+
+        alert('Não foi possível apagar as perguntas. Confira o Console (F12).');
+    }
+});
+
 
 
 async function renderClasses() {
@@ -273,28 +350,67 @@ async function renderClasses() {
 }
 
 
-function renderQuestions() {
-    const all = read('aventuraTeacherQuestions', {});
-    let html = '';
 
-    Object.keys(all).sort().forEach((level) => {
-        (all[level] || []).forEach((q) => {
-            html += `
-        <div class="item">
-          <strong>Fase ${escapeHtml(level)}:</strong>
-          ${escapeHtml(q.q)}<br>
-          <span class="muted">
-            ${q.options.map(escapeHtml).join(' · ')}
-            | correta: ${escapeHtml(q.answer)}
-          </span>
-        </div>
-      `;
+async function renderQuestions() {
+    const list = $('question-list');
+
+    list.textContent = 'Carregando perguntas...';
+
+    try {
+        const { data: authData, error: authError } =
+            await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        const user = authData.user;
+
+        if (!user) {
+            list.textContent = 'Entre novamente para consultar as perguntas.';
+            return;
+        }
+
+        const { data: questions, error } = await supabase
+            .from('questions')
+            .select('id, level, difficulty, prompt, option_a, option_b, option_c, correct_option')
+            .eq('teacher_id', user.id);
+
+        if (error) throw error;
+
+        if (!questions || questions.length === 0) {
+            list.innerHTML =
+                '<p class="muted">Nenhum desafio personalizado cadastrado.</p>';
+            return;
+        }
+
+        list.innerHTML = '<h3>Desafios cadastrados</h3>';
+
+        questions.forEach((q) => {
+            const item = document.createElement('div');
+            item.className = 'item';
+
+            const title = document.createElement('strong');
+            title.textContent = `Fase ${q.level}: ${q.prompt}`;
+
+            const details = document.createElement('p');
+            details.className = 'muted';
+
+            details.textContent =
+                `A: ${q.option_a} · B: ${q.option_b} · C: ${q.option_c} | ` +
+                `Correta: ${String(q.correct_option).toUpperCase()} | ` +
+                `Dificuldade: ${q.difficulty}`;
+
+            item.append(title, details);
+            list.appendChild(item);
         });
-    });
 
-    $('question-list').innerHTML = html ||
-        '<p class="muted">Nenhum desafio personalizado cadastrado.</p>';
+    } catch (error) {
+        console.error('Erro ao carregar perguntas:', error);
+
+        list.textContent =
+            'Não foi possível carregar as perguntas. Confira o Console (F12).';
+    }
 }
+
 
 async function render() {
     const p = read('aventuraMatematicaProgress', {
@@ -327,7 +443,7 @@ async function render() {
   `;
 
     await renderClasses();
-    renderQuestions();
+    await renderQuestions();
 }
 
 async function checkSession() {
@@ -346,4 +462,236 @@ async function checkSession() {
     }
 }
 
+let studentClasses = [];
+
+async function loadStudentClasses() {
+    const select = $('student-class');
+
+    const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+
+    if (authError) throw authError;
+
+    const user = authData.user;
+
+    if (!user) {
+        throw new Error('Faça login novamente.');
+    }
+
+    const { data, error } = await supabase
+        .from('classes')
+        .select('id, name')
+        .eq('teacher_id', user.id)
+        .order('name');
+
+    if (error) throw error;
+
+    studentClasses = data || [];
+
+    select.innerHTML = '';
+
+    if (studentClasses.length === 0) {
+        select.innerHTML =
+            '<option value="">Cadastre uma turma primeiro</option>';
+        return;
+    }
+
+    select.innerHTML =
+        '<option value="">Selecione uma turma</option>';
+
+    studentClasses.forEach((turma) => {
+        const option = document.createElement('option');
+        option.value = turma.id;
+        option.textContent = turma.name;
+        select.appendChild(option);
+    });
+}
+
+function generateStudentCode() {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const randomValues = new Uint8Array(8);
+
+    crypto.getRandomValues(randomValues);
+
+    return Array.from(randomValues)
+        .map(value => alphabet[value % alphabet.length])
+        .join('');
+}
+
+$('generate-student-codes').addEventListener('click', async () => {
+    const classId = $('student-class').value;
+    const quantity = Number($('student-quantity').value);
+    const button = $('generate-student-codes');
+    const output = $('student-code-list');
+
+    if (!classId) {
+        showToast('Selecione uma turma.', 'warning');
+        return;
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 40) {
+        showToast('Escolha uma quantidade entre 1 e 40.', 'warning');
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Gerando códigos...';
+    output.textContent = 'Gerando códigos...';
+
+    const generatedCodes = [];
+
+    try {
+        const { data: authData, error: authError } =
+            await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        if (!authData.user) {
+            throw new Error('Sua sessão expirou. Entre novamente.');
+        }
+
+        for (let i = 0; i < quantity; i++) {
+            let saved = false;
+
+            for (let attempt = 0; attempt < 5 && !saved; attempt++) {
+                const code = generateStudentCode();
+
+                const { error } = await supabase
+                    .from('students')
+                    .insert({
+                        class_id: classId,
+                        student_code: code,
+                        nickname: null,
+                        nickname_status: 'pending'
+                    });
+
+                if (!error) {
+                    generatedCodes.push(code);
+                    saved = true;
+                } else if (error.code !== '23505') {
+                    throw error;
+                }
+            }
+
+            if (!saved) {
+                throw new Error(
+                    'Não foi possível gerar um código único. Tente novamente.'
+                );
+            }
+        }
+
+        output.innerHTML = '<h4>Códigos gerados</h4>';
+
+        generatedCodes.forEach(code => {
+            const item = document.createElement('div');
+            item.className = 'item';
+
+            const strong = document.createElement('strong');
+            strong.textContent = code;
+
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copiar';
+
+            copyButton.addEventListener('click', async () => {
+                await navigator.clipboard.writeText(code);
+                showToast('Código copiado!');
+            });
+
+            item.append(strong, copyButton);
+            output.appendChild(item);
+        });
+
+        showToast(
+            `${generatedCodes.length} códigos gerados com sucesso!`
+        );
+
+        await renderStudents();
+
+    } catch (error) {
+        console.error('Erro ao gerar códigos:', error);
+
+        showToast(
+            error.message || 'Não foi possível gerar os códigos.',
+            'danger'
+        );
+
+        await renderStudents();
+
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Gerar códigos individuais';
+    }
+});
+
+async function renderStudents() {
+    const classId = $('student-class').value;
+    const list = $('student-list');
+
+    if (!classId) {
+        list.textContent = 'Selecione uma turma.';
+        return;
+    }
+
+    list.textContent = 'Carregando alunos...';
+
+    try {
+        const { data, error } = await supabase
+            .from('students')
+            .select('id, nickname, student_code, nickname_status')
+            .eq('class_id', classId)
+            .order('student_code');
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            list.textContent = 'Nenhum aluno cadastrado nesta turma.';
+            return;
+        }
+
+        list.innerHTML = '';
+
+        data.forEach(student => {
+            const item = document.createElement('div');
+            item.className = 'item';
+
+            const nickname = document.createElement('strong');
+            nickname.textContent =
+                student.nickname || 'Aguardando apelido';
+
+            const code = document.createElement('p');
+            code.textContent =
+                `Código: ${student.student_code}`;
+
+            const status = document.createElement('p');
+            status.textContent =
+                `Situação: ${student.nickname_status}`;
+
+            item.append(nickname, code, status);
+            list.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error('Erro ao consultar alunos:', error);
+        list.textContent = 'Não foi possível carregar os alunos.';
+    }
+}
+
+$('student-class').addEventListener('change', renderStudents);
+
+async function initializeStudentManagement() {
+    try {
+        await loadStudentClasses();
+    } catch (error) {
+        console.error('Erro ao carregar turmas dos alunos:', error);
+        showToast('Não foi possível carregar as turmas.', 'danger');
+    }
+}
+function showDashboard() {
+    $('login').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+    $('login-error').textContent = '';
+
+    render();
+    initializeStudentManagement();
+}
 checkSession();

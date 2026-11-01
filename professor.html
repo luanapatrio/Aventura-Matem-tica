@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aventura Matemática — Painel do Professor</title>
     <link rel="stylesheet" href="professor.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet">
 </head>
 
 <body>
@@ -58,6 +60,50 @@
                     turma</button>
                 <div id="class-list"></div>
             </section>
+            
+<section class="panel">
+    <h2>Gerenciar alunos</h2>
+
+    <p class="muted">
+        Selecione uma turma e gere códigos individuais
+        para os alunos entrarem no Aventura Matemática.
+    </p>
+
+    <label for="student-class">
+        Turma
+        <select id="student-class">
+            <option value="">Carregando turmas...</option>
+        </select>
+    </label>
+
+    <label for="student-quantity">
+        Quantidade de códigos
+        <input
+            type="number"
+            id="student-quantity"
+            min="1"
+            max="40"
+            value="5"
+        >
+    </label>
+
+    <button id="generate-student-codes">
+        Gerar códigos individuais
+    </button>
+
+    <div id="student-message" class="muted"></div>
+
+    <div id="student-code-list"></div>
+
+    <hr>
+
+    <h3>Alunos cadastrados</h3>
+
+    <div id="student-list">
+        Selecione uma turma para consultar os alunos.
+    </div>
+</section>
+
             <section class="panel">
                 <h2>Criar desafio personalizado</h2>
                 <p class="muted">Os desafios personalizados são usados pelo jogo no mesmo navegador. Cada pergunta
@@ -92,20 +138,33 @@
             </section>
             <button class="secondary" id="logout">Sair do painel</button>
         </div>
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast"
+         class="toast align-items-center text-bg-success border-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>✓ Sucesso!</strong>
+                <span id="toastMessage">
+                    Operação realizada com sucesso!
+                </span>
+            </div>
+
+            <button type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"
+                    aria-label="Fechar">
+            </button>
+        </div>
+    </div>
+</div>
     </main>
-    <script>
-        const $ = id => document.getElementById(id); const read = (key, fallback) => {try {return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback))} catch (e) {return fallback} }; const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-        $('login-button').onclick = () => {if ($('pin').value === '1234') {$('login').classList.add('hidden'); $('dashboard').classList.remove('hidden'); render()} else $('login-error').textContent = 'PIN incorreto. Tente novamente.'};
-        $('logout').onclick = () => {$('dashboard').classList.add('hidden'); $('login').classList.remove('hidden'); $('pin').value = ''};
-        $('save-class').onclick = () => {const name = $('class-name').value.trim(), code = $('class-code').value.trim().toUpperCase(); if (!name || !code) {alert('Preencha o nome da turma e o código.'); return } const classes = read('aventuraTeacherClasses', []); if (classes.some(c => c.code === code)) {alert('Esse código já está cadastrado.'); return } classes.push({name, code, createdAt: new Date().toLocaleDateString('pt-BR')}); write('aventuraTeacherClasses', classes); $('class-name').value = ''; $('class-code').value = ''; renderClasses()};
-        $('save-question').onclick = () => {const q = $('question-text').value.trim(), a = $('option-a').value.trim(), b = $('option-b').value.trim(), c = $('option-c').value.trim(); if (!q || !a || !b || !c) {alert('Preencha a pergunta e as três alternativas.'); return } const key = $('correct-option').value; const question = {q, options: [a, b, c], answer: ({a, b, c})[key], difficulty: $('difficulty').value}; const all = read('aventuraTeacherQuestions', {}); const level = $('question-level').value; all[level] = all[level] || []; all[level].push(question); write('aventuraTeacherQuestions', all); $('question-text').value = ''; $('option-a').value = ''; $('option-b').value = ''; $('option-c').value = ''; renderQuestions()};
-        $('clear-questions').onclick = () => {if (confirm('Apagar todos os desafios personalizados? O jogo voltará às perguntas padrão.')) {localStorage.removeItem('aventuraTeacherQuestions'); renderQuestions()} };
-        function renderClasses() {const classes = read('aventuraTeacherClasses', []); $('class-list').innerHTML = classes.length ? '<h3>Turmas cadastradas</h3>' + classes.map(c => `<div class="item"><strong>${escapeHtml(c.name)}</strong> — código <strong>${escapeHtml(c.code)}</strong> <span class="muted">(${escapeHtml(c.createdAt)})</span></div>`).join('') : '<p class="muted">Nenhuma turma cadastrada ainda.</p>'}
-        function renderQuestions() {const all = read('aventuraTeacherQuestions', {}); let html = ''; Object.keys(all).sort().forEach(level => {(all[level] || []).forEach((q, i) => {html += `<div class="item"><strong>Fase ${level}:</strong> ${escapeHtml(q.q)}<br><span class="muted">${q.options.map(escapeHtml).join(' · ')} | correta: ${escapeHtml(q.answer)}</span></div>`})}); $('question-list').innerHTML = html || '<p class="muted">Nenhum desafio personalizado cadastrado.</p>'}
-        function render() {const p = read('aventuraMatematicaProgress', {completedLevels: [], score: 0, achievements: []}); $('completed').textContent = (p.completedLevels || []).length; $('score').textContent = p.score || 0; $('achievements').textContent = (p.achievements || []).length; $('performance').innerHTML = `<div class="item"><strong>Progresso salvo neste navegador</strong><p>Fases: ${escapeHtml((p.completedLevels || []).join(', ') || 'Ainda não há fases concluídas')}</p><p>Pontuação: ${Number(p.score) || 0}</p><p>Conquistas: ${escapeHtml((p.achievements || []).join(', ') || 'Nenhuma registrada')}</p></div>`; renderClasses(); renderQuestions()}
-        function escapeHtml(value) {return String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]))}
-    </script>
-    <script type="module" src="professor.js"></script>
+    
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="professor.js"></script>
 
 </body>
 
