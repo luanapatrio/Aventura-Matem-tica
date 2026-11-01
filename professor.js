@@ -144,6 +144,8 @@ $('save-class').addEventListener('click', async () => {
         $('class-code').value = '';
 
         await renderClasses();
+        await loadStudentClasses();
+
 
         alert('Turma salva com sucesso!');
     } catch (error) {
@@ -623,6 +625,7 @@ $('generate-student-codes').addEventListener('click', async () => {
     }
 });
 
+
 async function renderStudents() {
     const classId = $('student-class').value;
     const list = $('student-list');
@@ -659,14 +662,36 @@ async function renderStudents() {
                 student.nickname || 'Aguardando apelido';
 
             const code = document.createElement('p');
-            code.textContent =
-                `Código: ${student.student_code}`;
+            code.textContent = `Código: ${student.student_code}`;
 
             const status = document.createElement('p');
             status.textContent =
                 `Situação: ${student.nickname_status}`;
 
             item.append(nickname, code, status);
+
+            if (student.nickname) {
+                const approveButton = document.createElement('button');
+                approveButton.textContent = 'Aprovar';
+                approveButton.addEventListener('click', () =>
+                    updateNicknameStatus(student.id, 'approved')
+                );
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Editar';
+                editButton.addEventListener('click', () =>
+                    editStudentNickname(student)
+                );
+
+                const blockButton = document.createElement('button');
+                blockButton.textContent = 'Bloquear';
+                blockButton.addEventListener('click', () =>
+                    updateNicknameStatus(student.id, 'blocked')
+                );
+
+                item.append(approveButton, editButton, blockButton);
+            }
+
             list.appendChild(item);
         });
 
@@ -675,6 +700,65 @@ async function renderStudents() {
         list.textContent = 'Não foi possível carregar os alunos.';
     }
 }
+
+
+async function updateNicknameStatus(studentId, status) {
+    try {
+        const { error } = await supabase
+            .from('students')
+            .update({ nickname_status: status })
+            .eq('id', studentId);
+
+        if (error) throw error;
+
+        showToast(
+            status === 'approved'
+                ? 'Apelido aprovado!'
+                : 'Apelido bloqueado!'
+        );
+
+        await renderStudents();
+
+    } catch (error) {
+        console.error(error);
+        showToast('Não foi possível atualizar o apelido.', 'danger');
+    }
+}
+
+async function editStudentNickname(student) {
+    const newNickname = prompt(
+        'Digite o novo apelido:',
+        student.nickname
+    );
+
+    if (newNickname === null) return;
+
+    if (!newNickname.trim()) {
+        showToast('O apelido não pode ficar vazio.', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('students')
+            .update({
+                nickname: newNickname.trim(),
+                nickname_status: 'pending'
+            })
+            .eq('id', student.id);
+
+        if (error) throw error;
+
+        showToast('Apelido atualizado! Ele precisa ser aprovado novamente.');
+
+        await renderStudents();
+
+    } catch (error) {
+        console.error(error);
+        showToast('Não foi possível editar o apelido.', 'danger');
+    }
+}
+
 
 $('student-class').addEventListener('change', renderStudents);
 
