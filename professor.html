@@ -53,10 +53,28 @@
             </section>
             <section class="panel">
                 <h2>Cadastrar turma</h2>
-                <div class="grid"><label>Nome da turma<input id="class-name"
-                            placeholder="Ex.: 4º ano A"></label><label>Código da sala<input id="class-code"
-                            maxlength="16" placeholder="Ex.: TURMA4A"></label></div><button id="save-class">Salvar
-                    turma</button>
+                <div class="grid">
+                    <label>Nome da turma
+                        <input id="class-name" placeholder="Ex.: Turma A">
+                    </label>
+
+                    <label>Código da sala
+                        <input id="class-code" maxlength="16" placeholder="Ex.: TURMA4A">
+                    </label>
+
+                    <label for="school-year">
+                        Ano escolar
+                        <select id="school-year" required>
+                            <option value="">Selecione o ano</option>
+                            <option value="2">2º ano</option>
+                            <option value="3">3º ano</option>
+                            <option value="4">4º ano</option>
+                            <option value="5">5º ano</option>
+                        </select>
+                    </label>
+                </div>
+
+                <button id="save-class">Salvar turma</button>
                 <div id="class-list"></div>
             </section>
 

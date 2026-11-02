@@ -311,3 +311,13 @@ table tbody tr:last-child td {
         padding: 10px 8px;
     }
 }
+
+/* Arredondar todos os botões */
+button,
+button.btn,
+.btn,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+    border-radius: 30px !important;
+}
