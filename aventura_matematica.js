@@ -1,4 +1,3 @@
-console.log('ARQUIVO aventura_matematica.js CARREGADO!');
 const GAME_W = 1280;
 const GAME_H = 720;
 const FLOOR_Y = 660;      // topo do chão

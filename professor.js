@@ -204,33 +204,33 @@ $('save-question').addEventListener('click', async () => {
             throw new Error('Sua sessão expirou. Entre novamente.');
         }
 
-const { data, error } = await supabase
-    .from('questions')
-    .insert({
-        teacher_id: user.id,
-        level: level,
-        difficulty: difficulty,
-        prompt: q,
-        option_a: a,
-        option_b: b,
-        option_c: c,
-        correct_option: key
-    })
-    .select('id')
-    .single();
+        const { data, error } = await supabase
+            .from('questions')
+            .insert({
+                teacher_id: user.id,
+                level: level,
+                difficulty: difficulty,
+                prompt: q,
+                option_a: a,
+                option_b: b,
+                option_c: c,
+                correct_option: key
+            })
+            .select('id')
+            .single();
 
-if (error) throw error;
+        if (error) throw error;
 
-console.log('Pergunta cadastrada. ID:', data.id);
+        console.log('Pergunta cadastrada. ID:', data.id);
 
-$('question-text').value = '';
-$('option-a').value = '';
-$('option-b').value = '';
-$('option-c').value = '';
+        $('question-text').value = '';
+        $('option-a').value = '';
+        $('option-b').value = '';
+        $('option-c').value = '';
 
-await renderQuestions();
+        await renderQuestions();
 
-showToast('Pergunta cadastrada com sucesso!');
+        showToast('Pergunta cadastrada com sucesso!');
 
     } catch (error) {
         console.error('Erro ao salvar pergunta:', error);
@@ -704,7 +704,143 @@ async function renderStudents() {
         list.textContent = 'Não foi possível carregar os alunos.';
     }
 }
+async function renderStudentPerformance() {
+    const container = $('student-performance');
 
+    container.textContent = 'Carregando desempenho...';
+
+    try {
+        // Identifica o professor conectado
+        const { data: authData, error: authError } =
+            await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        const user = authData.user;
+
+        if (!user) {
+            throw new Error('Sessão não encontrada.');
+        }
+
+        // Busca somente as turmas do professor
+        const { data: classes, error: classesError } =
+            await supabase
+                .from('classes')
+                .select('id, name')
+                .eq('teacher_id', user.id);
+
+        if (classesError) throw classesError;
+
+        if (!classes || classes.length === 0) {
+            container.textContent = 'Nenhuma turma cadastrada.';
+            return;
+        }
+
+        const classIds = classes.map(turma => turma.id);
+
+        const classNames = {};
+        classes.forEach(turma => {
+            classNames[turma.id] = turma.name;
+        });
+
+        // Busca os alunos dessas turmas
+        const { data: students, error: studentsError } =
+            await supabase
+                .from('students')
+                .select('id, nickname, student_code, class_id')
+                .in('class_id', classIds)
+                .order('student_code');
+
+        if (studentsError) throw studentsError;
+
+        if (!students || students.length === 0) {
+            container.textContent = 'Nenhum aluno cadastrado nas suas turmas.';
+            return;
+        }
+
+        const studentIds = students.map(student => student.id);
+
+        // Busca as tentativas registradas desses alunos
+        const { data: attempts, error: attemptsError } =
+            await supabase
+                .from('attempts')
+                .select('student_id, is_correct, points')
+                .in('student_id', studentIds);
+
+        if (attemptsError) throw attemptsError;
+
+        const attemptsByStudent = {};
+
+        students.forEach(student => {
+            attemptsByStudent[student.id] = {
+                total: 0,
+                correct: 0,
+                incorrect: 0,
+                points: 0
+            };
+        });
+
+        (attempts || []).forEach(attempt => {
+            const result = attemptsByStudent[attempt.student_id];
+
+            if (!result) return;
+
+            result.total++;
+
+            if (attempt.is_correct) {
+                result.correct++;
+            } else {
+                result.incorrect++;
+            }
+
+            result.points += Number(attempt.points) || 0;
+        });
+
+        // Monta a tabela de desempenho
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Turma</th>
+                            <th>Tentativas</th>
+                            <th>Acertos</th>
+                            <th>Erros</th>
+                            <th>Pontos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.map(student => {
+            const result = attemptsByStudent[student.id];
+
+            return `
+                                <tr>
+                                    <td>${escapeHtml(
+                student.nickname || 'Aguardando apelido'
+            )}</td>
+                                    <td>${escapeHtml(
+                classNames[student.class_id] || '-'
+            )}</td>
+                                    <td>${result.total}</td>
+                                    <td>${result.correct}</td>
+                                    <td>${result.incorrect}</td>
+                                    <td>${result.points}</td>
+                                </tr>
+                            `;
+        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Erro ao carregar desempenho:', error);
+
+        container.textContent =
+            'Não foi possível carregar o desempenho dos alunos.';
+    }
+}
 
 async function updateNicknameStatus(studentId, status) {
     try {
@@ -781,5 +917,6 @@ function showDashboard() {
 
     render();
     initializeStudentManagement();
+    renderStudentPerformance();
 }
 checkSession();

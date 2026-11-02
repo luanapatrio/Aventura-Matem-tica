@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aventura Matemática — Painel do Professor</title>
     <link rel="stylesheet" href="professor.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -60,49 +59,43 @@
                     turma</button>
                 <div id="class-list"></div>
             </section>
-            
-<section class="panel">
-    <h2>Gerenciar alunos</h2>
 
-    <p class="muted">
-        Selecione uma turma e gere códigos individuais
-        para os alunos entrarem no Aventura Matemática.
-    </p>
+            <section class="panel">
+                <h2>Gerenciar alunos</h2>
 
-    <label for="student-class">
-        Turma
-        <select id="student-class">
-            <option value="">Carregando turmas...</option>
-        </select>
-    </label>
+                <p class="muted">
+                    Selecione uma turma e gere códigos individuais
+                    para os alunos entrarem no Aventura Matemática.
+                </p>
 
-    <label for="student-quantity">
-        Quantidade de códigos
-        <input
-            type="number"
-            id="student-quantity"
-            min="1"
-            max="40"
-            value="5"
-        >
-    </label>
+                <label for="student-class">
+                    Turma
+                    <select id="student-class">
+                        <option value="">Carregando turmas...</option>
+                    </select>
+                </label>
 
-    <button id="generate-student-codes">
-        Gerar códigos individuais
-    </button>
+                <label for="student-quantity">
+                    Quantidade de códigos
+                    <input type="number" id="student-quantity" min="1" max="40" value="5">
+                </label>
 
-    <div id="student-message" class="muted"></div>
+                <button id="generate-student-codes">
+                    Gerar códigos individuais
+                </button>
 
-    <div id="student-code-list"></div>
+                <div id="student-message" class="muted"></div>
 
-    <hr>
+                <div id="student-code-list"></div>
 
-    <h3>Alunos cadastrados</h3>
+                <hr>
 
-    <div id="student-list">
-        Selecione uma turma para consultar os alunos.
-    </div>
-</section>
+                <h3>Alunos cadastrados</h3>
+
+                <div id="student-list">
+                    Selecione uma turma para consultar os alunos.
+                </div>
+            </section>
 
             <section class="panel">
                 <h2>Criar desafio personalizado</h2>
@@ -132,39 +125,45 @@
             </section>
             <section class="panel">
                 <h2>Desempenho e histórico</h2>
+
+                <p class="muted">
+                    Acompanhe o desempenho dos alunos das suas turmas.
+                    Os dados são atualizados diretamente pelo Supabase.
+                </p>
+
                 <div id="performance"></div>
-                <p class="muted">Para acompanhar vários alunos individualmente em diferentes aparelhos, será necessário
-                    conectar este painel a uma base de dados e implementar login/código de sala no servidor.</p>
+
+                <hr>
+
+                <h3>Desempenho por aluno</h3>
+                <div id="student-performance">
+                    Carregando desempenho dos alunos...
+                </div>
             </section>
             <button class="secondary" id="logout">Sair do painel</button>
         </div>
         <div class="toast-container position-fixed top-0 end-0 p-3">
-    <div id="successToast"
-         class="toast align-items-center text-bg-success border-0"
-         role="alert"
-         aria-live="assertive"
-         aria-atomic="true">
+            <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert"
+                aria-live="assertive" aria-atomic="true">
 
-        <div class="d-flex">
-            <div class="toast-body">
-                <strong>✓ Sucesso!</strong>
-                <span id="toastMessage">
-                    Operação realizada com sucesso!
-                </span>
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>✓ Sucesso!</strong>
+                        <span id="toastMessage">
+                            Operação realizada com sucesso!
+                        </span>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Fechar">
+                    </button>
+                </div>
             </div>
-
-            <button type="button"
-                    class="btn-close btn-close-white me-2 m-auto"
-                    data-bs-dismiss="toast"
-                    aria-label="Fechar">
-            </button>
         </div>
-    </div>
-</div>
     </main>
-    
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="professor.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="professor.js"></script>
 
 </body>
 
