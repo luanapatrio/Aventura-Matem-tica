@@ -58,8 +58,13 @@
     <button id="read-button" type="button">🔊 Ouvir instruções</button>
     <button id="accessibility-close" class="accessibility-close" type="button">Fechar opções</button>
   </aside>
+
   <script src="aventura_matematica.js"></script>
-  <script>
+  <script type="module">
+  import { supabase } from './supabase-client.js';
+
+  window.supabase = supabase;
+  
     const profileKey = 'aventuraMatematicaProfile';
     const savedProfile = JSON.parse(localStorage.getItem(profileKey) || '{}');
     const nickname = document.getElementById('nickname');
@@ -98,15 +103,89 @@
       const active = document.body.classList.toggle('dyslexia-font'); e.currentTarget.setAttribute('aria-pressed', String(active));
       if (typeof setGameFont === 'function') setGameFont(active);
     });
-    document.getElementById('start-button').addEventListener('click', () => {
-      const name = nickname.value.trim();
-      if (!name) {document.getElementById('status').textContent = 'Escolha um apelido para começar.'; nickname.focus(); return;}
-      localStorage.setItem(profileKey, JSON.stringify({nickname: name, avatar: avatar.value, roomCode: roomCode.value.trim()}));
-      if (typeof window.startAventuraGame === 'function') {
-        document.getElementById('student-menu').style.display = 'none';
-        window.startAventuraGame();
-      } else {document.getElementById('status').textContent = 'O jogo ainda está carregando. Aguarde um instante e clique em Iniciar novamente.';}
-    });
+    
+document.getElementById('start-button').addEventListener('click', async () => {
+  const name = nickname.value.trim();
+  const room = roomCode.value.trim();
+  const studentCode = document.getElementById('student-code').value.trim();
+
+  const status = document.getElementById('status');
+
+  if (!name) {
+    status.textContent = 'Escolha um apelido para começar.';
+    nickname.focus();
+    return;
+  }
+
+  // Caminho 1: jogar sem turma
+  if (!room && !studentCode) {
+    localStorage.setItem(profileKey, JSON.stringify({
+      nickname: name,
+      avatar: avatar.value,
+      roomCode: ''
+    }));
+
+    iniciarPartida(status);
+    return;
+  }
+
+  // Caminho 2: jogar vinculado a uma turma
+  if (!room || !studentCode) {
+    status.textContent = 'Informe o código da sala e o código individual.';
+    return;
+  }
+
+  status.textContent = 'Verificando seus códigos...';
+
+  try {
+    const { data, error } = await window.supabase.rpc(
+      'submit_student_nickname',
+      {
+        p_room_code: room,
+        p_student_code: studentCode,
+        p_nickname: name
+      }
+    );
+
+    if (error) throw error;
+
+    if (data === 'invalid') {
+  status.textContent = 'Não foi possível validar os códigos. Confira e tente novamente.';
+  return;
+}
+
+if (data === 'invalid') {
+  status.textContent = 'Código da sala ou individual inválido, ou apelido não autorizado. Confira com o professor.';
+  return;
+}
+
+localStorage.setItem(profileKey, JSON.stringify({
+  nickname: name,
+  avatar: avatar.value,
+  roomCode: room
+}));
+
+if (data === 'submitted') {
+  status.textContent = 'Apelido enviado! Aguarde a aprovação do professor para entrar na turma.';
+  return;
+}
+
+if (data === 'approved') {
+  iniciarPartida(status);
+  return;
+}
+  } catch (error) {
+    console.error(error);
+    status.textContent = 'Não foi possível verificar seus dados. Tente novamente.';
+  }
+});
+
+function iniciarPartida(status) {
+  document.getElementById('student-menu').style.display = 'none';
+  status.textContent = '';
+
+  alert('Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.');
+};
   </script>
 </body>
 
