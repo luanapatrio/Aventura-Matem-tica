@@ -1,4 +1,4 @@
-
+console.log('ARQUIVO aventura_matematica.js CARREGADO!');
 const GAME_W = 1280;
 const GAME_H = 720;
 const FLOOR_Y = 660;      // topo do chão
@@ -1034,8 +1034,12 @@ function showQuizModal(questionData) {
     ];
 
     const checkAnswer = (selected) => {
+        console.log('Resposta selecionada:', selected);
+        console.log('Dados da pergunta:', questionData);
+saveStudentAttempt(questionData, selected);
         if (answered) return;
         answered = true;
+        saveStudentAttempt(questionData, selected);
 
         els.forEach(e => e.destroy());
         scene.input.keyboard.off('keydown-ONE', handlers[0]);
@@ -1139,3 +1143,38 @@ function drawClock(scene, x, y, r, hours, minutes, add) {
 
 // Inicializa o jogo Phaser
 const game = new Phaser.Game(config);
+
+async function saveStudentAttempt(questionData, selected) {
+    console.log('saveStudentAttempt foi chamada!', questionData);
+    try {
+        const profile = JSON.parse(
+            localStorage.getItem('aventuraMatematicaProfile') || '{}'
+        );
+
+        // Não registra respostas de quem está jogando livremente
+        if (!profile.studentId) return;
+
+        const isCorrect = selected === questionData.answer;
+
+        const { error } = await window.supabase.rpc(
+            'register_student_attempt',
+            {
+                p_student_id: profile.studentId,
+                p_question_id: questionData.id || null,
+                p_question_text: questionData.q,
+                p_level: currentLevel,
+                p_is_correct: isCorrect,
+                p_points: isCorrect ? 10 : 0
+            }
+        );
+
+        if (error) {
+            console.error('Erro ao registrar tentativa:', error);
+        } else {
+            console.log('Tentativa registrada com sucesso!');
+        }
+
+    } catch (error) {
+        console.error('Erro ao salvar tentativa:', error);
+    }
+}

@@ -117,67 +117,58 @@ document.getElementById('start-button').addEventListener('click', async () => {
     return;
   }
 
-  // Caminho 1: jogar sem turma
-  if (!room && !studentCode) {
+try {
+  const { data, error } = await window.supabase.rpc(
+    'submit_student_nickname',
+    {
+      p_room_code: room,
+      p_student_code: studentCode,
+      p_nickname: name
+    }
+  );
+
+  if (error) throw error;
+
+  if (data === 'invalid') {
+    status.textContent = 'Código da sala ou individual inválido, ou apelido não autorizado. Confira com o professor.';
+    return;
+  }
+
+  if (data === 'submitted') {
+    status.textContent = 'Apelido enviado! Aguarde a aprovação do professor para entrar na turma.';
+    return;
+  }
+
+  if (data === 'approved') {
+    const { data: studentId, error: studentError } =
+      await window.supabase.rpc('get_approved_student_id', {
+        p_room_code: room,
+        p_student_code: studentCode,
+        p_nickname: name
+      });
+
+    if (studentError) throw studentError;
+
+    if (!studentId) {
+      status.textContent = 'Não foi possível identificar seu cadastro. Confira com o professor.';
+      return;
+    }
+
     localStorage.setItem(profileKey, JSON.stringify({
       nickname: name,
       avatar: avatar.value,
-      roomCode: ''
+      roomCode: room,
+      studentId: studentId
     }));
 
     iniciarPartida(status);
     return;
   }
 
-  // Caminho 2: jogar vinculado a uma turma
-  if (!room || !studentCode) {
-    status.textContent = 'Informe o código da sala e o código individual.';
-    return;
-  }
-
-  status.textContent = 'Verificando seus códigos...';
-
-  try {
-    const { data, error } = await window.supabase.rpc(
-      'submit_student_nickname',
-      {
-        p_room_code: room,
-        p_student_code: studentCode,
-        p_nickname: name
-      }
-    );
-
-    if (error) throw error;
-
-    if (data === 'invalid') {
-  status.textContent = 'Não foi possível validar os códigos. Confira e tente novamente.';
-  return;
+} catch (error) {
+  console.error(error);
+  status.textContent = 'Não foi possível verificar seus dados. Tente novamente.';
 }
-
-if (data === 'invalid') {
-  status.textContent = 'Código da sala ou individual inválido, ou apelido não autorizado. Confira com o professor.';
-  return;
-}
-
-localStorage.setItem(profileKey, JSON.stringify({
-  nickname: name,
-  avatar: avatar.value,
-  roomCode: room
-}));
-
-if (data === 'submitted') {
-  status.textContent = 'Apelido enviado! Aguarde a aprovação do professor para entrar na turma.';
-  return;
-}
-
-if (data === 'approved') {
-  iniciarPartida(status);
-  return;
-}
-  } catch (error) {
-    console.error(error);
-    status.textContent = 'Não foi possível verificar seus dados. Tente novamente.';
-  }
 });
 
 function iniciarPartida(status) {

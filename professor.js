@@ -204,29 +204,33 @@ $('save-question').addEventListener('click', async () => {
             throw new Error('Sua sessão expirou. Entre novamente.');
         }
 
-        const { error } = await supabase
-            .from('questions')
-            .insert({
-                teacher_id: user.id,
-                level: level,
-                difficulty: difficulty,
-                prompt: q,
-                option_a: a,
-                option_b: b,
-                option_c: c,
-                correct_option: key
-            });
+const { data, error } = await supabase
+    .from('questions')
+    .insert({
+        teacher_id: user.id,
+        level: level,
+        difficulty: difficulty,
+        prompt: q,
+        option_a: a,
+        option_b: b,
+        option_c: c,
+        correct_option: key
+    })
+    .select('id')
+    .single();
 
-        if (error) throw error;
+if (error) throw error;
 
-        $('question-text').value = '';
-        $('option-a').value = '';
-        $('option-b').value = '';
-        $('option-c').value = '';
+console.log('Pergunta cadastrada. ID:', data.id);
 
-        await renderQuestions();
+$('question-text').value = '';
+$('option-a').value = '';
+$('option-b').value = '';
+$('option-c').value = '';
 
-        showToast('Pergunta cadastrada com sucesso!');
+await renderQuestions();
+
+showToast('Pergunta cadastrada com sucesso!');
 
     } catch (error) {
         console.error('Erro ao salvar pergunta:', error);
