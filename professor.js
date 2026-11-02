@@ -102,16 +102,19 @@ $('logout').addEventListener('click', async () => {
 });
 
 
+
 $('save-class').addEventListener('click', async () => {
     const name = $('class-name').value.trim();
     const code = $('class-code').value.trim().toUpperCase();
+    const schoolYear = $('school-year').value;
     const button = $('save-class');
 
     console.log('Nome da turma:', name);
     console.log('Código da turma:', code);
+    console.log('Ano escolar:', schoolYear);
 
-    if (!name || !code) {
-        alert('Preencha o nome da turma e o código.');
+    if (!name || !code || !schoolYear) {
+        alert('Preencha o nome, o código e o ano escolar.');
         return;
     }
 
@@ -135,19 +138,21 @@ $('save-class').addEventListener('click', async () => {
             .insert({
                 teacher_id: user.id,
                 name: name,
-                room_code: code
+                room_code: code,
+                school_year: Number(schoolYear)
             });
 
         if (error) throw error;
 
         $('class-name').value = '';
         $('class-code').value = '';
+        $('school-year').value = '';
 
         await renderClasses();
         await loadStudentClasses();
 
-
         alert('Turma salva com sucesso!');
+
     } catch (error) {
         console.error('Erro ao salvar turma:', error);
 
@@ -163,6 +168,7 @@ $('save-class').addEventListener('click', async () => {
         button.textContent = 'Salvar turma';
     }
 });
+
 
 
 
