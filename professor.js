@@ -706,7 +706,6 @@ async function renderStudents() {
 }
 async function renderStudentPerformance() {
     const container = $('student-performance');
-    <th>Histórico</th>
     container.textContent = 'Carregando desempenho...';
 
     try {
@@ -808,6 +807,7 @@ async function renderStudentPerformance() {
                             <th>Acertos</th>
                             <th>Erros</th>
                             <th>Pontos</th>
+                            <th>Histórico</th>
                         </tr>
                     </thead>
                     <tbody>
