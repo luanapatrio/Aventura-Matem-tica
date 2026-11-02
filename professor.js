@@ -706,7 +706,7 @@ async function renderStudents() {
 }
 async function renderStudentPerformance() {
     const container = $('student-performance');
-
+    <th>Histórico</th>
     container.textContent = 'Carregando desempenho...';
 
     try {
@@ -827,18 +827,111 @@ async function renderStudentPerformance() {
                                     <td>${result.incorrect}</td>
                                     <td>${result.points}</td>
                                 </tr>
+                                <td>
+    <button
+        class="btn btn-primary btn-sm view-history"
+        data-student-id="${student.id}"
+        data-student-name="${escapeHtml(
+                student.nickname || 'Aluno'
+            )}">
+        Ver histórico
+    </button>
+</td>
                             `;
         }).join('')}
                     </tbody>
                 </table>
             </div>
         `;
-
+        container.querySelectorAll('.view-history').forEach(button => {
+            button.addEventListener('click', () => {
+                renderStudentHistory(
+                    button.dataset.studentId,
+                    button.dataset.studentName
+                );
+            });
+        });
     } catch (error) {
         console.error('Erro ao carregar desempenho:', error);
 
         container.textContent =
             'Não foi possível carregar o desempenho dos alunos.';
+    }
+}
+
+async function renderStudentHistory(studentId, studentName) {
+    const container = $('student-history');
+
+    container.textContent = 'Carregando histórico...';
+
+    try {
+        const { data, error } = await supabase
+            .from('attempts')
+            .select(`
+                question_text,
+                level,
+                is_correct,
+                points,
+                answered_at
+            `)
+            .eq('student_id', studentId)
+            .order('answered_at', { ascending: false });
+
+        if (error) throw error;
+
+        container.innerHTML = '';
+
+        const title = document.createElement('h3');
+        title.textContent = `Histórico de ${studentName}`;
+        container.appendChild(title);
+
+        if (!data || data.length === 0) {
+            container.appendChild(
+                document.createTextNode(
+                    'Este aluno ainda não respondeu perguntas.'
+                )
+            );
+            return;
+        }
+
+        data.forEach(attempt => {
+            const item = document.createElement('div');
+            item.className = 'item mb-3';
+
+            const question = document.createElement('strong');
+            question.textContent =
+                attempt.question_text || 'Pergunta sem enunciado';
+
+            const result = document.createElement('p');
+            result.textContent = attempt.is_correct
+                ? 'Resultado: Acertou'
+                : 'Resultado: Errou';
+
+            result.className = attempt.is_correct
+                ? 'text-success'
+                : 'text-danger';
+
+            const details = document.createElement('p');
+            details.className = 'muted';
+
+            const date = attempt.answered_at
+                ? new Date(attempt.answered_at).toLocaleString('pt-BR')
+                : 'Data não disponível';
+
+            details.textContent =
+                `Fase: ${attempt.level} · ` +
+                `Pontos: ${attempt.points} · ` +
+                `Data: ${date}`;
+
+            item.append(question, result, details);
+            container.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+
+        container.textContent =
+            'Não foi possível carregar o histórico do aluno.';
     }
 }
 
