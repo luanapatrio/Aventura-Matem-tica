@@ -831,18 +831,18 @@ async function renderStudentPerformance() {
                                     <td>${result.total}</td>
                                     <td>${result.correct}</td>
                                     <td>${result.incorrect}</td>
-                                    <td>${result.points}</td>
-                                </tr>
-                                <td>
-    <button
-        class="btn btn-primary btn-sm view-history"
-        data-student-id="${student.id}"
-        data-student-name="${escapeHtml(
+                                                                        <td>${result.points}</td>
+                                    <td>
+                                        <button
+                                            class="btn btn-primary btn-sm view-history"
+                                            data-student-id="${student.id}"
+                                            data-student-name="${escapeHtml(
                 student.nickname || 'Aluno'
             )}">
-        Ver histórico
-    </button>
-</td>
+                                            Ver histórico
+                                        </button>
+                                    </td>
+                                </tr>
                             `;
         }).join('')}
                     </tbody>
@@ -1009,13 +1009,53 @@ async function initializeStudentManagement() {
         showToast('Não foi possível carregar as turmas.', 'danger');
     }
 }
-function showDashboard() {
+
+async function showConnectedAccount() {
+    const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+
+    if (authError) throw authError;
+
+    const user = authData.user;
+
+    if (!user) {
+        throw new Error('Nenhuma conta conectada.');
+    }
+
+    const { data, error } = await supabase
+        .from('teacher_year_access')
+        .select('school_year')
+        .eq('teacher_id', user.id)
+        .single();
+
+    if (error) throw error;
+
+    $('connected-email').textContent = user.email;
+
+    $('connected-year').textContent =
+        `Acesso autorizado: ${data.school_year}º ano`;
+}
+async function showDashboard() {
     $('login').classList.add('hidden');
     $('dashboard').classList.remove('hidden');
     $('login-error').textContent = '';
 
-    render();
-    initializeStudentManagement();
-    renderStudentPerformance();
+    try {
+        await showConnectedAccount();
+
+        await render();
+        await initializeStudentManagement();
+        await renderStudentPerformance();
+
+    } catch (error) {
+        console.error('Erro ao abrir painel:', error);
+
+        alert(
+            'Não foi possível carregar os dados da conta. Faça login novamente.'
+        );
+
+        await supabase.auth.signOut();
+        showLogin();
+    }
 }
 checkSession();

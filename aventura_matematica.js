@@ -1035,7 +1035,6 @@ function showQuizModal(questionData) {
     const checkAnswer = (selected) => {
         console.log('Resposta selecionada:', selected);
         console.log('Dados da pergunta:', questionData);
-saveStudentAttempt(questionData, selected);
         if (answered) return;
         answered = true;
         saveStudentAttempt(questionData, selected);

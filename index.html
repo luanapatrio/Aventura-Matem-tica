@@ -16,9 +16,10 @@
       <h1>🚀 Aventura Matemática</h1>
       <p>Ajude Byte a resolver desafios, aprender com cada tentativa e avançar pelas fases!</p>
       <div class="menu-row">
-        <label>Seu apelido
-          <input id="nickname" maxlength="18" placeholder="Ex.: Estrela123" autocomplete="off">
+        <label>Seu nome
+          <input id="nickname" maxlength="60" placeholder="Ex.: Mauricio de Souza" autocomplete="off">
         </label>
+
         <label>Escolha seu avatar
           <select id="avatar">
             <option value="🤖 Byte">🤖 Byte</option>
@@ -28,12 +29,10 @@
             <option value="🦊 Raposa">🦊 Raposa</option>
           </select>
         </label>
-        <label>Código da sala (se sua turma tiver)
+
+        <label>Código da turma
           <input id="room-code" maxlength="16" placeholder="Ex.: TURMA4A" autocomplete="off">
         </label>
-        <label>Código individual (se estiver em uma turma)
-  <input id="student-code" maxlength="8" placeholder="Ex.: AB23CD45" autocomplete="off">
-</label>
       </div>
       <div class="menu-row">
         <button id="start-button">▶ Iniciar jogo</button>
@@ -61,16 +60,16 @@
 
   <script src="aventura_matematica.js"></script>
   <script type="module">
-  import { supabase } from './supabase-client.js';
+    import { supabase } from './supabase-client.js';
 
-  window.supabase = supabase;
-  
+    window.supabase = supabase;
+
     const profileKey = 'aventuraMatematicaProfile';
     const savedProfile = JSON.parse(localStorage.getItem(profileKey) || '{}');
     const nickname = document.getElementById('nickname');
     const avatar = document.getElementById('avatar');
     const roomCode = document.getElementById('room-code');
-    nickname.value = savedProfile.nickname || '';
+    nickname.value = '';
     avatar.value = savedProfile.avatar || '🤖 Byte';
     roomCode.value = savedProfile.roomCode || '';
     const progress = JSON.parse(localStorage.getItem('aventuraMatematicaProgress') || '{"completedLevels":[],"score":0,"achievements":[]}');
@@ -103,80 +102,96 @@
       const active = document.body.classList.toggle('dyslexia-font'); e.currentTarget.setAttribute('aria-pressed', String(active));
       if (typeof setGameFont === 'function') setGameFont(active);
     });
-    
-document.getElementById('start-button').addEventListener('click', async () => {
-  const name = nickname.value.trim();
-  const room = roomCode.value.trim();
-  const studentCode = document.getElementById('student-code').value.trim();
 
+    document.getElementById('start-button').addEventListener('click', async () => {
+  const fullName = nickname.value.trim();
+  const room = roomCode.value.trim();
   const status = document.getElementById('status');
 
-  if (!name) {
-    status.textContent = 'Escolha um apelido para começar.';
+  if (!fullName) {
+    status.textContent = 'Informe seu nome para começar.';
     nickname.focus();
     return;
   }
 
-try {
-  const { data, error } = await window.supabase.rpc(
-    'submit_student_nickname',
-    {
-      p_room_code: room,
-      p_student_code: studentCode,
-      p_nickname: name
-    }
-  );
+  const nameParts = fullName.split(/\s+/);
 
-  if (error) throw error;
-
-  if (data === 'invalid') {
-    status.textContent = 'Código da sala ou individual inválido, ou apelido não autorizado. Confira com o professor.';
+  if (nameParts.length < 2) {
+    status.textContent = 'Informe seu primeiro nome e sobrenome.';
+    nickname.focus();
     return;
   }
 
-  if (data === 'submitted') {
-    status.textContent = 'Apelido enviado! Aguarde a aprovação do professor para entrar na turma.';
+  const displayName =
+    nameParts[0] + ' ' + nameParts[1].charAt(0).toUpperCase() + '.';
+
+  if (!room) {
+    status.textContent = 'Informe o código da sua turma.';
+    roomCode.focus();
     return;
   }
 
-  if (data === 'approved') {
-    const { data: studentId, error: studentError } =
-      await window.supabase.rpc('get_approved_student_id', {
+  try {
+    const { data, error } = await window.supabase.rpc(
+      'submit_student_nickname',
+      {
         p_room_code: room,
-        p_student_code: studentCode,
-        p_nickname: name
-      });
+        p_nickname: displayName
+      }
+    );
 
-    if (studentError) throw studentError;
+    if (error) throw error;
 
-    if (!studentId) {
-      status.textContent = 'Não foi possível identificar seu cadastro. Confira com o professor.';
+    if (data === 'invalid') {
+      status.textContent =
+        'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
       return;
     }
 
-    localStorage.setItem(profileKey, JSON.stringify({
-      nickname: name,
-      avatar: avatar.value,
-      roomCode: room,
-      studentId: studentId
-    }));
+    if (data === 'submitted') {
+      status.textContent =
+        'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
+      return;
+    }
 
-    iniciarPartida(status);
-    return;
+    if (data === 'approved') {
+      const { data: studentId, error: studentError } =
+        await window.supabase.rpc('get_approved_student_id', {
+          p_room_code: room,
+          p_nickname: displayName
+        });
+
+      if (studentError) throw studentError;
+
+      if (!studentId) {
+        status.textContent =
+          'Não foi possível identificar seu cadastro. Confira com sua professora.';
+        return;
+      }
+
+      localStorage.setItem(profileKey, JSON.stringify({
+        nickname: displayName,
+        avatar: avatar.value,
+        roomCode: room,
+        studentId: studentId
+      }));
+
+      iniciarPartida(status);
+      return;
+    }
+
+  } catch (error) {
+    console.error(error);
+    status.textContent =
+      'Não foi possível verificar seus dados. Tente novamente.';
   }
-
-} catch (error) {
-  console.error(error);
-  status.textContent = 'Não foi possível verificar seus dados. Tente novamente.';
-}
 });
+    function iniciarPartida(status) {
+      document.getElementById('student-menu').style.display = 'none';
+      status.textContent = '';
 
-function iniciarPartida(status) {
-  document.getElementById('student-menu').style.display = 'none';
-  status.textContent = '';
-
-  alert('Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.');
-};
+      alert('Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.');
+    };
   </script>
 </body>
 
