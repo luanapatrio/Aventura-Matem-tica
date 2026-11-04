@@ -68,6 +68,21 @@
     const nickname = document.getElementById('nickname');
     const avatar = document.getElementById('avatar');
     const roomCode = document.getElementById('room-code');
+
+    // Impede que o Phaser capture as teclas digitadas nos campos
+    [nickname, roomCode].forEach((campo) => {
+      campo.addEventListener('keydown', (event) => {
+        event.stopPropagation();
+      });
+
+      campo.addEventListener('keyup', (event) => {
+        event.stopPropagation();
+      });
+
+      campo.addEventListener('keypress', (event) => {
+        event.stopPropagation();
+      });
+    });
     nickname.value = '';
     avatar.value = savedProfile.avatar || '🤖 Byte';
     roomCode.value = savedProfile.roomCode || '';
