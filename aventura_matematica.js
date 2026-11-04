@@ -476,7 +476,6 @@ function create() {
     // ----- controles -----
     cursors = this.input.keyboard.createCursorKeys();
     keys = this.input.keyboard.addKeys('W,A,S,D');
-    this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
 
     // ----- física -----
     platforms = this.physics.add.staticGroup();
