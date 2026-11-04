@@ -468,3 +468,276 @@ body.dyslexia-font select {
     scroll-behavior: auto !important;
   }
 }
+
+/* RESPONSIVIDADE — AVENTURA MATEMÁTICA*/
+
+html,
+body {
+    width: 100%;
+    min-width: 320px;
+    min-height: 100%;
+    margin: 0;
+}
+
+#game-container {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+}
+
+#game-container canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    touch-action: none;
+}
+
+/* Tablets */
+@media (min-width: 651px) and (max-width: 1024px) {
+    #student-menu {
+        padding: 20px;
+    }
+
+    .menu-card {
+        width: min(760px, 100%);
+        padding: 28px;
+    }
+
+    .menu-card h1 {
+        font-size: clamp(30px, 4vw, 40px);
+    }
+
+    .menu-card input,
+    .menu-card select,
+    .menu-card button {
+        min-height: 54px;
+        font-size: 17px;
+    }
+}
+
+/* Celulares */
+@media (max-width: 650px) {
+    body {
+        overflow: auto;
+    }
+
+    #game-container {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    #game-container canvas {
+        max-width: 100vw;
+        max-height: 100dvh;
+    }
+
+    #student-menu {
+        align-items: flex-start;
+        justify-content: center;
+        padding: 14px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .menu-card {
+        width: 100%;
+        min-height: auto;
+        padding: 22px 16px;
+        border-radius: 20px;
+    }
+
+    .menu-card h1 {
+        font-size: clamp(25px, 7vw, 34px);
+    }
+
+    .menu-card > p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .menu-row {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .menu-card label {
+        width: 100%;
+        flex-basis: auto;
+        font-size: 14px;
+    }
+
+    .menu-card input,
+    .menu-card select {
+        width: 100%;
+        min-height: 50px;
+        font-size: 16px;
+    }
+
+    .menu-card button {
+        width: 100%;
+        min-height: 52px;
+        font-size: 16px;
+    }
+
+    #saved-progress {
+        max-width: 100%;
+        white-space: normal;
+        line-height: 1.5;
+    }
+
+    #accessibility-toggle {
+        width: 52px;
+        height: 52px;
+        right: 12px;
+        bottom: 12px;
+        font-size: 25px;
+    }
+
+    #accessibility-panel {
+        right: 12px;
+        bottom: 74px;
+        width: min(300px, calc(100vw - 24px));
+    }
+}
+
+/* Celular na horizontal */
+@media (max-width: 900px) and (orientation: landscape) {
+    #student-menu {
+        align-items: flex-start;
+        padding: 8px;
+    }
+
+    .menu-card {
+        width: min(850px, 100%);
+        padding: 14px 20px;
+    }
+
+    .menu-card h1 {
+        font-size: 26px;
+    }
+
+    .menu-card > p {
+        margin: 6px auto 10px;
+        font-size: 13px;
+    }
+
+    .menu-row {
+        flex-direction: row;
+        gap: 10px;
+        margin: 8px 0;
+    }
+
+    .menu-card label {
+        flex: 1 1 30%;
+    }
+
+    .menu-card input,
+    .menu-card select,
+    .menu-card button {
+        min-height: 42px;
+        padding: 8px 10px;
+    }
+}
+
+/* Evita zoom acidental em elementos do jogo */
+button {
+    touch-action: manipulation;
+}
+
+/* =========================================
+   CONTROLES DE TOQUE — BYTE
+========================================= */
+
+#mobile-controls {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: none;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 24px;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.mobile-control-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    pointer-events: auto;
+}
+
+.mobile-btn {
+    width: clamp(58px, 8vw, 82px);
+    height: clamp(58px, 8vw, 82px);
+    border: 2px solid rgba(255, 255, 255, 0.65);
+    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.72);
+    color: white;
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+}
+
+.mobile-btn.pressed {
+    background: rgba(45, 212, 191, 0.85);
+    transform: scale(0.93);
+    border-color: white;
+}
+
+.mobile-jump {
+    background: rgba(37, 99, 235, 0.78);
+}
+
+.mobile-switch {
+    background: rgba(234, 88, 12, 0.78);
+}
+
+/* Celulares */
+@media (max-width: 650px) {
+    #mobile-controls {
+        padding: 14px;
+        padding-bottom: max(18px, env(safe-area-inset-bottom));
+    }
+
+    .mobile-control-group {
+        gap: 9px;
+    }
+
+    .mobile-btn {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        font-size: 25px;
+    }
+}
+
+/* Celular na horizontal */
+@media (max-width: 900px) and (orientation: landscape) {
+    #mobile-controls {
+        padding: 10px 18px;
+    }
+
+    .mobile-btn {
+        width: 54px;
+        height: 54px;
+    }
+}

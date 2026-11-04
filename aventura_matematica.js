@@ -30,6 +30,15 @@ const config = {
 // ---------- Estado global ----------
 let player, aura, platforms, items, door, doorGlow, doorLabel;
 let cursors, keys;
+// Controles para celular e tablet
+let mobileControlsElement = null;
+
+const touchControls = {
+    left: false,
+    right: false,
+    jump: false,
+    switchPressed: false
+};
 let score = 0;
 let currentLevel = 1;
 const maxLevels = 4;
@@ -480,7 +489,7 @@ function create() {
     // ----- controles -----
     cursors = this.input.keyboard.createCursorKeys();
     keys = this.input.keyboard.addKeys('W,A,S,D', false);    //this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
-
+    createMobileControls(this);
     // Permite digitar normalmente nos campos do menu
     const camposTexto = [
         document.getElementById('nickname'),
@@ -550,7 +559,83 @@ function create() {
     this.physics.pause();
     buildIntro(scene);
 }
+function createMobileControls(scene) {
+    // Evita criar os controles mais de uma vez
+    if (mobileControlsElement) {
+        mobileControlsElement.remove();
+    }
 
+    const isTouchDevice =
+        window.matchMedia('(pointer: coarse)').matches ||
+        window.innerWidth <= 1024;
+
+    if (!isTouchDevice) return;
+
+    const container = document.createElement('div');
+    container.id = 'mobile-controls';
+
+    container.innerHTML = `
+        <div class="mobile-control-group mobile-movement">
+            <button type="button" class="mobile-btn" data-control="left"
+                aria-label="Andar para a esquerda">◀</button>
+
+            <button type="button" class="mobile-btn" data-control="right"
+                aria-label="Andar para a direita">▶</button>
+        </div>
+
+        <div class="mobile-control-group mobile-actions">
+            <button type="button" class="mobile-btn mobile-jump"
+                data-control="jump" aria-label="Pular">⬆</button>
+
+            <button type="button" class="mobile-btn mobile-switch"
+                data-control="switch" aria-label="Trocar módulo">🔄</button>
+        </div>
+    `;
+
+    document.body.appendChild(container);
+    mobileControlsElement = container;
+
+    const buttons = container.querySelectorAll('[data-control]');
+
+    buttons.forEach((button) => {
+        const control = button.dataset.control;
+
+        button.addEventListener('pointerdown', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            button.setPointerCapture(event.pointerId);
+
+            if (control === 'switch') {
+                touchControls.switchPressed = true;
+            } else {
+                touchControls[control] = true;
+            }
+
+            button.classList.add('pressed');
+        });
+
+        const release = (event) => {
+            event.preventDefault();
+
+            if (control !== 'switch') {
+                touchControls[control] = false;
+            }
+
+            button.classList.remove('pressed');
+        };
+
+        button.addEventListener('pointerup', release);
+        button.addEventListener('pointercancel', release);
+        button.addEventListener('lostpointercapture', release);
+    });
+
+    // Os controles aparecem somente quando a partida começa.
+    container.style.display = 'none';
+
+    // Guarda a referência para a função de início da partida.
+    scene.mobileControlsElement = container;
+}
 // ==========================================================
 // TELA INICIAL
 // ==========================================================
@@ -589,8 +674,12 @@ function buildIntro(scene) {
         introEls.forEach(o => { scene.tweens.killTweensOf(o); o.destroy(); });
         introEls = [];
         gameStarted = true;
+
+        if (scene.mobileControlsElement) {
+            scene.mobileControlsElement.style.display = 'flex';
+        }
+
         scene.physics.resume();
-        announceLevel(scene);
     };
     window.startAventuraGame = start;
     scene.input.on('pointerdown', start);
@@ -616,36 +705,51 @@ function update() {
         player.setVelocityX(0);
         return;
     }
+    // ----- trocar módulo (seta para baixo / S / botão de toque) -----
+const trocarModulo =
+    Phaser.Input.Keyboard.JustDown(cursors.down) ||
+    Phaser.Input.Keyboard.JustDown(keys.S) ||
+    touchControls.switchPressed;
 
-    // ----- trocar módulo (seta para baixo / S) -----
-    if (Phaser.Input.Keyboard.JustDown(cursors.down) || Phaser.Input.Keyboard.JustDown(keys.S)) {
-        setMode(this, playerMode === 'water' ? 'fire' : 'water', false);
-    }
-
-    // ----- movimento -----
-    const left = cursors.left.isDown || keys.A.isDown;
-    const right = cursors.right.isDown || keys.D.isDown;
-    const jump = cursors.up.isDown || keys.W.isDown;
-
-    if (left) {
-        player.setVelocityX(-PLAYER_SPEED);
-        player.setFlipX(true);
-    } else if (right) {
-        player.setVelocityX(PLAYER_SPEED);
-        player.setFlipX(false);
-    } else {
-        player.setVelocityX(0);
-    }
-
-    if (jump && player.body.touching.down) {
-        player.setVelocityY(JUMP_FORCE);
-        burst(this, player.x, player.y + 28, 0x94a3b8, 6);
-    }
-
-    checkHazards(this);
-    checkLever(this);
+if (trocarModulo) {
+    setMode(this, playerMode === 'water' ? 'fire' : 'water', false);
+    touchControls.switchPressed = false;
 }
 
+// ----- movimento -----
+const left =
+    cursors.left.isDown ||
+    keys.A.isDown ||
+    touchControls.left;
+
+const right =
+    cursors.right.isDown ||
+    keys.D.isDown ||
+    touchControls.right;
+
+const jump =
+    cursors.up.isDown ||
+    keys.W.isDown ||
+    touchControls.jump;
+
+if (left) {
+    player.setVelocityX(-PLAYER_SPEED);
+    player.setFlipX(true);
+} else if (right) {
+    player.setVelocityX(PLAYER_SPEED);
+    player.setFlipX(false);
+} else {
+    player.setVelocityX(0);
+}
+
+if (jump && player.body.touching.down) {
+    player.setVelocityY(JUMP_FORCE);
+    burst(this, player.x, player.y + 28, 0x94a3b8, 6);
+}
+
+checkHazards(this);
+checkLever(this);
+}
 // ==========================================================
 // MÓDULO ÁGUA / FOGO
 // ==========================================================
