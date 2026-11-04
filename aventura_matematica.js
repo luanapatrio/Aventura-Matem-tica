@@ -479,8 +479,7 @@ function create() {
 
     // ----- controles -----
     cursors = this.input.keyboard.createCursorKeys();
-    keys = this.input.keyboard.addKeys('W,A,S,D');
-    //this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
+    keys = this.input.keyboard.addKeys('W,A,S,D', false);    //this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
 
     // Permite digitar normalmente nos campos do menu
     const camposTexto = [
