@@ -192,10 +192,14 @@ const levels = {
 
 // Fase 4 e fase bônus reutilizam a estrutura visual da fase 3, com nomes e desafios próprios.
 // A arquitetura pode receber mapas exclusivos depois sem alterar a progressão.
-levels[4] = { ...levels[3], name: 'Desafio Final da Escola', width: 2200,
-    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 } };
-levels[5] = { ...levels[3], name: 'Fase Bônus: Mestre da Matemática', width: 2200,
-    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 } };
+levels[4] = {
+    ...levels[3], name: 'Desafio Final da Escola', width: 2200,
+    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 }
+};
+levels[5] = {
+    ...levels[3], name: 'Fase Bônus: Mestre da Matemática', width: 2200,
+    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 }
+};
 
 questionsByLevel[4] = [
     { q: 'Uma turma arrecadou 8 caixas com 24 livros cada. Quantos livros arrecadou?', options: ['182', '192', '202'], answer: '192' },
@@ -476,7 +480,25 @@ function create() {
     // ----- controles -----
     cursors = this.input.keyboard.createCursorKeys();
     keys = this.input.keyboard.addKeys('W,A,S,D');
+    //this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
 
+    // Permite digitar normalmente nos campos do menu
+    const camposTexto = [
+        document.getElementById('nickname'),
+        document.getElementById('room-code')
+    ];
+
+    camposTexto.forEach((campo) => {
+        if (!campo) return;
+
+        campo.addEventListener('focus', () => {
+            this.input.keyboard.enabled = false;
+        });
+
+        campo.addEventListener('blur', () => {
+            this.input.keyboard.enabled = true;
+        });
+    });
     // ----- física -----
     platforms = this.physics.add.staticGroup();
     items = this.physics.add.group({ allowGravity: false, immovable: true });
@@ -647,11 +669,11 @@ function checkHazards(scene) {
     for (let i = 0; i < hazards.length; i++) {
         const h = hazards[i];
         const touching = b.right > h.x + 4 && b.left < h.x + h.w - 4 &&
-                         b.bottom > h.y + 2 && b.top < h.y + h.h;
+            b.bottom > h.y + 2 && b.top < h.y + h.h;
         if (!touching) continue;
 
         const safe = (h.type === 'fire' && playerMode === 'fire') ||
-                     (h.type === 'water' && playerMode === 'water');
+            (h.type === 'water' && playerMode === 'water');
         if (!safe) {
             killPlayer(scene, h);
             return;
@@ -873,7 +895,7 @@ function spawnBubble(scene, h) {
 // ==========================================================
 function prepareQuestions(level) {
     let custom = [];
-    try { custom = JSON.parse(localStorage.getItem('aventuraTeacherQuestions') || '{}')[level] || []; } catch (_) {}
+    try { custom = JSON.parse(localStorage.getItem('aventuraTeacherQuestions') || '{}')[level] || []; } catch (_) { }
     const bank = custom.length ? custom : questionsByLevel[level];
     questionDeck = Phaser.Utils.Array.Shuffle([...bank]);
 }
