@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -11,121 +12,221 @@
 
 <body>
   <div id="game-container" aria-label="Área do jogo Aventura Matemática"></div>
+
   <section id="student-menu" aria-label="Menu inicial do aluno">
     <div class="menu-card">
       <h1>🚀 Aventura Matemática</h1>
       <p>Ajude Byte a resolver desafios, aprender com cada tentativa e avançar pelas fases!</p>
+
       <div class="menu-row">
         <label for="nickname">Nome completo:</label>
-        <input type="text" id="nickname" maxlength="60" placeholder="Digite seu nome e sobrenome" autocomplete="name">
+        <input
+          type="text"
+          id="nickname"
+          maxlength="60"
+          placeholder="Digite seu nome e sobrenome"
+          autocomplete="name"
+        >
 
-        <label>Escolha seu avatar
-          <select id="avatar">
-            <option value="🤖 Byte">🤖 Byte</option>
-            <option value="🚀 Explorador">🚀 Explorador</option>
-            <option value="⭐ Estrela">⭐ Estrela</option>
-            <option value="🐱 Gatinho">🐱 Gatinho</option>
-            <option value="🦊 Raposa">🦊 Raposa</option>
-          </select>
-        </label>
+        <label for="avatar">Escolha seu avatar</label>
+        <select id="avatar">
+          <option value="🤖 Byte">🤖 Byte</option>
+          <option value="🚀 Explorador">🚀 Explorador</option>
+          <option value="⭐ Estrela">⭐ Estrela</option>
+          <option value="🐱 Gatinho">🐱 Gatinho</option>
+          <option value="🦊 Raposa">🦊 Raposa</option>
+        </select>
 
-        <label>Código da turma
-          <input id="room-code" maxlength="16" placeholder="Ex.: TURMA4A" autocomplete="off">
-        </label>
+        <label for="room-code">Código da turma (opcional):</label>
+        <input
+          id="room-code"
+          maxlength="16"
+          placeholder="Ex.: TURMA4A"
+          autocomplete="off"
+        >
       </div>
+
       <div class="menu-row">
-        <button id="start-button">▶ Iniciar jogo</button>
-        <button id="instructions-button" class="secondary">📖 Instruções + áudio</button>
+        <button id="start-button">▶ Entrar na turma</button>
+        <button id="play-free-button" class="secondary">🎮 Jogar sem código</button>
       </div>
+
+      <div class="menu-row">
+        <button id="instructions-button" class="secondary">
+          📖 Instruções + áudio
+        </button>
+      </div>
+
       <div id="instructions" role="region" aria-live="polite">
         <strong>Como jogar</strong>
-        <p>Use as setas do teclado para andar e pular. A seta para baixo troca o módulo do Byte. Colete os chips,
-          responda às perguntas e chegue à porta. Se errar, tudo bem: leia ou ouça a explicação e continue tentando.</p>
-        <p>O módulo FOGO atravessa a lava; o módulo ÁGUA atravessa a água. Pule por cima do ácido verde.</p>
+        <p>
+          Use as setas do teclado para andar e pular. A seta para baixo troca
+          o módulo do Byte. Colete os chips, responda às perguntas e chegue à
+          porta. Se errar, tudo bem: leia ou ouça a explicação e continue tentando.
+        </p>
+        <p>
+          O módulo FOGO atravessa a lava; o módulo ÁGUA atravessa a água.
+          Pule por cima do ácido verde.
+        </p>
       </div>
+
       <p id="saved-progress" aria-live="polite"></p>
       <p id="status" aria-live="polite"></p>
     </div>
   </section>
-  <button id="accessibility-toggle" type="button" aria-label="Abrir opções de acessibilidade" aria-expanded="false"
-    aria-controls="accessibility-panel" title="Acessibilidade">♿</button>
+
+  <button
+    id="accessibility-toggle"
+    type="button"
+    aria-label="Abrir opções de acessibilidade"
+    aria-expanded="false"
+    aria-controls="accessibility-panel"
+    title="Acessibilidade"
+  >♿</button>
+
   <aside id="accessibility-panel" aria-label="Opções de acessibilidade" hidden>
     <h2>♿ Acessibilidade</h2>
-    <button id="contrast-button" type="button" aria-pressed="false">◐ Alto contraste</button>
-    <button id="dyslexia-button" type="button" aria-pressed="false">Aa Fonte legível</button>
-    <button id="read-button" type="button">🔊 Ouvir instruções</button>
-    <button id="accessibility-close" class="accessibility-close" type="button">Fechar opções</button>
+    <button id="contrast-button" type="button" aria-pressed="false">
+      ◐ Alto contraste
+    </button>
+    <button id="dyslexia-button" type="button" aria-pressed="false">
+      Aa Fonte legível
+    </button>
+    <button id="read-button" type="button">
+      🔊 Ouvir instruções
+    </button>
+    <button id="accessibility-close" class="accessibility-close" type="button">
+      Fechar opções
+    </button>
   </aside>
 
   <script src="aventura_matematica.js"></script>
+
   <script type="module">
     import { supabase } from './supabase-client.js';
 
     window.supabase = supabase;
 
     const profileKey = 'aventuraMatematicaProfile';
-    const savedProfile = JSON.parse(localStorage.getItem(profileKey) || '{}');
+    const savedProfile = JSON.parse(
+      localStorage.getItem(profileKey) || '{}'
+    );
+
     const nickname = document.getElementById('nickname');
     const avatar = document.getElementById('avatar');
     const roomCode = document.getElementById('room-code');
+    const status = document.getElementById('status');
 
-    // Impede que o Phaser capture as teclas digitadas nos campos
+    // Evita que o Phaser capture as teclas digitadas nos campos
     [nickname, roomCode].forEach((campo) => {
-      campo.addEventListener('keydown', (event) => {
-        event.stopPropagation();
-      });
-
-      campo.addEventListener('keyup', (event) => {
-        event.stopPropagation();
-      });
-
-      campo.addEventListener('keypress', (event) => {
-        event.stopPropagation();
+      ['keydown', 'keyup', 'keypress'].forEach((eventName) => {
+        campo.addEventListener(eventName, (event) => {
+          event.stopPropagation();
+        });
       });
     });
+
     nickname.value = '';
     avatar.value = savedProfile.avatar || '🤖 Byte';
     roomCode.value = savedProfile.roomCode || '';
-    const progress = JSON.parse(localStorage.getItem('aventuraMatematicaProgress') || '{"completedLevels":[],"score":0,"achievements":[]}');
-    document.getElementById('saved-progress').textContent = `Seu progresso neste dispositivo: ${progress.completedLevels.length || 0} fase(s) concluída(s) · ${progress.score || 0} pontos.`;
+
+    const progress = JSON.parse(
+      localStorage.getItem('aventuraMatematicaProgress') ||
+      '{"completedLevels":[],"score":0,"achievements":[]}'
+    );
+
+    document.getElementById('saved-progress').textContent =
+      `Seu progresso neste dispositivo: ${progress.completedLevels.length || 0} fase(s) concluída(s) · ${progress.score || 0} pontos.`;
+
     const instructions = document.getElementById('instructions');
     const accessibilityToggle = document.getElementById('accessibility-toggle');
     const accessibilityPanel = document.getElementById('accessibility-panel');
+
     function setAccessibilityPanel(open) {
       accessibilityPanel.hidden = !open;
+
       accessibilityToggle.setAttribute('aria-expanded', String(open));
-      accessibilityToggle.setAttribute('aria-label', open ? 'Fechar opções de acessibilidade' : 'Abrir opções de acessibilidade');
-      if (open) document.getElementById('contrast-button').focus();
-      else accessibilityToggle.focus();
+
+      accessibilityToggle.setAttribute(
+        'aria-label',
+        open
+          ? 'Fechar opções de acessibilidade'
+          : 'Abrir opções de acessibilidade'
+      );
+
+      if (open) {
+        document.getElementById('contrast-button').focus();
+      } else {
+        accessibilityToggle.focus();
+      }
     }
-    accessibilityToggle.addEventListener('click', () => setAccessibilityPanel(accessibilityPanel.hidden));
-    document.getElementById('accessibility-close').addEventListener('click', () => setAccessibilityPanel(false));
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !accessibilityPanel.hidden) setAccessibilityPanel(false);
-    });
-    document.getElementById('instructions-button').addEventListener('click', () => {
-      instructions.style.display = instructions.style.display === 'block' ? 'none' : 'block';
-      if (instructions.style.display === 'block') speakText(instructions.innerText);
-    });
-    document.getElementById('read-button').addEventListener('click', () => speakText(instructions.innerText || 'Use as setas para andar e pular. Colete os chips, responda às perguntas e chegue à porta. Errar faz parte de aprender.'));
-    document.getElementById('contrast-button').addEventListener('click', (e) => {
-      const active = document.body.classList.toggle('high-contrast'); e.currentTarget.setAttribute('aria-pressed', String(active));
-      const canvas = document.querySelector('#game-container canvas'); if (canvas) canvas.style.filter = active ? 'contrast(1.5) saturate(1.2)' : '';
-    });
-    document.getElementById('dyslexia-button').addEventListener('click', (e) => {
-      const active = document.body.classList.toggle('dyslexia-font'); e.currentTarget.setAttribute('aria-pressed', String(active));
-      if (typeof setGameFont === 'function') setGameFont(active);
+
+    accessibilityToggle.addEventListener('click', () => {
+      setAccessibilityPanel(accessibilityPanel.hidden);
     });
 
-    document.getElementById('start-button').addEventListener('click', async () => {
+    document.getElementById('accessibility-close').addEventListener(
+      'click',
+      () => setAccessibilityPanel(false)
+    );
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !accessibilityPanel.hidden) {
+        setAccessibilityPanel(false);
+      }
+    });
+
+    document.getElementById('instructions-button').addEventListener(
+      'click',
+      () => {
+        instructions.style.display =
+          instructions.style.display === 'block' ? 'none' : 'block';
+
+        if (instructions.style.display === 'block') {
+          speakText(instructions.innerText);
+        }
+      }
+    );
+
+    document.getElementById('read-button').addEventListener('click', () => {
+      speakText(
+        instructions.innerText ||
+        'Use as setas para andar e pular. Colete os chips, responda às perguntas e chegue à porta. Errar faz parte de aprender.'
+      );
+    });
+
+    document.getElementById('contrast-button').addEventListener('click', (e) => {
+      const active = document.body.classList.toggle('high-contrast');
+
+      e.currentTarget.setAttribute('aria-pressed', String(active));
+
+      const canvas = document.querySelector('#game-container canvas');
+
+      if (canvas) {
+        canvas.style.filter = active
+          ? 'contrast(1.5) saturate(1.2)'
+          : '';
+      }
+    });
+
+    document.getElementById('dyslexia-button').addEventListener('click', (e) => {
+      const active = document.body.classList.toggle('dyslexia-font');
+
+      e.currentTarget.setAttribute('aria-pressed', String(active));
+
+      if (typeof setGameFont === 'function') {
+        setGameFont(active);
+      }
+    });
+
+    // Validação do nome completo
+    function validarNome() {
       const fullName = nickname.value.trim();
-      const room = roomCode.value.trim();
-      const status = document.getElementById('status');
 
       if (!fullName) {
         status.textContent = 'Informe seu nome para começar.';
         nickname.focus();
-        return;
+        return null;
       }
 
       const nameParts = fullName.split(/\s+/);
@@ -133,79 +234,120 @@
       if (nameParts.length < 2) {
         status.textContent = 'Informe seu primeiro nome e sobrenome.';
         nickname.focus();
-        return;
+        return null;
       }
 
-      const displayName =
-        nameParts[0] + ' ' + nameParts[1].charAt(0).toUpperCase() + '.';
+      return nameParts[0] + ' ' +
+        nameParts[1].charAt(0).toUpperCase() + '.';
+    }
 
-      if (!room) {
-        status.textContent = 'Informe o código da sua turma.';
-        roomCode.focus();
-        return;
-      }
+    // ENTRAR NA TURMA
+    document.getElementById('start-button').addEventListener(
+      'click',
+      async () => {
+        const displayName = validarNome();
+        const room = roomCode.value.trim();
 
-      try {
-        const { data, error } = await window.supabase.rpc(
-          'submit_student_nickname',
-          {
-            p_room_code: room,
-            p_nickname: displayName
-          }
-        );
+        if (!displayName) return;
 
-        if (error) throw error;
-
-        if (data === 'invalid') {
+        if (!room) {
           status.textContent =
-            'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
+            'Informe o código da turma ou escolha Jogar sem código.';
+          roomCode.focus();
           return;
         }
 
-        if (data === 'submitted') {
-          status.textContent =
-            'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
-          return;
-        }
-
-        if (data === 'approved') {
-          const { data: studentId, error: studentError } =
-            await window.supabase.rpc('get_approved_student_id', {
+        try {
+          const { data, error } = await window.supabase.rpc(
+            'submit_student_nickname',
+            {
               p_room_code: room,
               p_nickname: displayName
-            });
+            }
+          );
 
-          if (studentError) throw studentError;
+          if (error) throw error;
 
-          if (!studentId) {
+          if (data === 'invalid') {
             status.textContent =
-              'Não foi possível identificar seu cadastro. Confira com sua professora.';
+              'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
             return;
           }
 
-          localStorage.setItem(profileKey, JSON.stringify({
-            nickname: displayName,
-            avatar: avatar.value,
-            roomCode: room,
-            studentId: studentId
-          }));
+          if (data === 'submitted') {
+            status.textContent =
+              'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
+            return;
+          }
 
-          iniciarPartida(status);
-          return;
+          if (data === 'approved') {
+            const { data: studentId, error: studentError } =
+              await window.supabase.rpc('get_approved_student_id', {
+                p_room_code: room,
+                p_nickname: displayName
+              });
+
+            if (studentError) throw studentError;
+
+            if (!studentId) {
+              status.textContent =
+                'Não foi possível identificar seu cadastro. Confira com sua professora.';
+              return;
+            }
+
+            localStorage.setItem(profileKey, JSON.stringify({
+              nickname: displayName,
+              avatar: avatar.value,
+              roomCode: room,
+              studentId: studentId,
+              playMode: 'class'
+            }));
+
+            iniciarPartida();
+            return;
+          }
+
+          status.textContent =
+            'Não foi possível identificar seu cadastro. Tente novamente.';
+
+        } catch (error) {
+          console.error(error);
+
+          status.textContent =
+            'Não foi possível verificar seus dados. Tente novamente.';
         }
-
-      } catch (error) {
-        console.error(error);
-        status.textContent =
-          'Não foi possível verificar seus dados. Tente novamente.';
       }
-    });
-    function iniciarPartida(status) {
+    );
+
+    // JOGAR SEM CÓDIGO
+    document.getElementById('play-free-button').addEventListener(
+      'click',
+      () => {
+        const displayName = validarNome();
+
+        if (!displayName) return;
+
+        localStorage.setItem(profileKey, JSON.stringify({
+          nickname: displayName,
+          avatar: avatar.value,
+          roomCode: '',
+          studentId: null,
+          playMode: 'free'
+        }));
+
+        iniciarPartida();
+      }
+    );
+
+    // INICIAR PARTIDA
+    function iniciarPartida() {
       document.getElementById('student-menu').style.display = 'none';
       status.textContent = '';
 
-      alert('Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.');
-    };
+      alert(
+        'Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.'
+      );
+    }
   </script>
 </body>
 
