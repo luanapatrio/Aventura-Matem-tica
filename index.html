@@ -16,9 +16,8 @@
       <h1>🚀 Aventura Matemática</h1>
       <p>Ajude Byte a resolver desafios, aprender com cada tentativa e avançar pelas fases!</p>
       <div class="menu-row">
-        <label>Seu nome
-          <input id="nickname" maxlength="60" placeholder="Ex.: Mauricio de Souza" autocomplete="off">
-        </label>
+        <label for="nickname">Nome completo:</label>
+        <input type="text" id="nickname" maxlength="60" placeholder="Digite seu nome e sobrenome" autocomplete="name">
 
         <label>Escolha seu avatar
           <select id="avatar">
@@ -104,88 +103,88 @@
     });
 
     document.getElementById('start-button').addEventListener('click', async () => {
-  const fullName = nickname.value.trim();
-  const room = roomCode.value.trim();
-  const status = document.getElementById('status');
+      const fullName = nickname.value.trim();
+      const room = roomCode.value.trim();
+      const status = document.getElementById('status');
 
-  if (!fullName) {
-    status.textContent = 'Informe seu nome para começar.';
-    nickname.focus();
-    return;
-  }
-
-  const nameParts = fullName.split(/\s+/);
-
-  if (nameParts.length < 2) {
-    status.textContent = 'Informe seu primeiro nome e sobrenome.';
-    nickname.focus();
-    return;
-  }
-
-  const displayName =
-    nameParts[0] + ' ' + nameParts[1].charAt(0).toUpperCase() + '.';
-
-  if (!room) {
-    status.textContent = 'Informe o código da sua turma.';
-    roomCode.focus();
-    return;
-  }
-
-  try {
-    const { data, error } = await window.supabase.rpc(
-      'submit_student_nickname',
-      {
-        p_room_code: room,
-        p_nickname: displayName
-      }
-    );
-
-    if (error) throw error;
-
-    if (data === 'invalid') {
-      status.textContent =
-        'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
-      return;
-    }
-
-    if (data === 'submitted') {
-      status.textContent =
-        'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
-      return;
-    }
-
-    if (data === 'approved') {
-      const { data: studentId, error: studentError } =
-        await window.supabase.rpc('get_approved_student_id', {
-          p_room_code: room,
-          p_nickname: displayName
-        });
-
-      if (studentError) throw studentError;
-
-      if (!studentId) {
-        status.textContent =
-          'Não foi possível identificar seu cadastro. Confira com sua professora.';
+      if (!fullName) {
+        status.textContent = 'Informe seu nome para começar.';
+        nickname.focus();
         return;
       }
 
-      localStorage.setItem(profileKey, JSON.stringify({
-        nickname: displayName,
-        avatar: avatar.value,
-        roomCode: room,
-        studentId: studentId
-      }));
+      const nameParts = fullName.split(/\s+/);
 
-      iniciarPartida(status);
-      return;
-    }
+      if (nameParts.length < 2) {
+        status.textContent = 'Informe seu primeiro nome e sobrenome.';
+        nickname.focus();
+        return;
+      }
 
-  } catch (error) {
-    console.error(error);
-    status.textContent =
-      'Não foi possível verificar seus dados. Tente novamente.';
-  }
-});
+      const displayName =
+        nameParts[0] + ' ' + nameParts[1].charAt(0).toUpperCase() + '.';
+
+      if (!room) {
+        status.textContent = 'Informe o código da sua turma.';
+        roomCode.focus();
+        return;
+      }
+
+      try {
+        const { data, error } = await window.supabase.rpc(
+          'submit_student_nickname',
+          {
+            p_room_code: room,
+            p_nickname: displayName
+          }
+        );
+
+        if (error) throw error;
+
+        if (data === 'invalid') {
+          status.textContent =
+            'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
+          return;
+        }
+
+        if (data === 'submitted') {
+          status.textContent =
+            'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
+          return;
+        }
+
+        if (data === 'approved') {
+          const { data: studentId, error: studentError } =
+            await window.supabase.rpc('get_approved_student_id', {
+              p_room_code: room,
+              p_nickname: displayName
+            });
+
+          if (studentError) throw studentError;
+
+          if (!studentId) {
+            status.textContent =
+              'Não foi possível identificar seu cadastro. Confira com sua professora.';
+            return;
+          }
+
+          localStorage.setItem(profileKey, JSON.stringify({
+            nickname: displayName,
+            avatar: avatar.value,
+            roomCode: room,
+            studentId: studentId
+          }));
+
+          iniciarPartida(status);
+          return;
+        }
+
+      } catch (error) {
+        console.error(error);
+        status.textContent =
+          'Não foi possível verificar seus dados. Tente novamente.';
+      }
+    });
     function iniciarPartida(status) {
       document.getElementById('student-menu').style.display = 'none';
       status.textContent = '';
