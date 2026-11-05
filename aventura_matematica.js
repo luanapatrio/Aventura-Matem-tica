@@ -73,37 +73,39 @@ const HZ_COLOR = { fire: 0xf97316, water: 0x38bdf8, acid: 0x84cc16 };
 
 
 // PERGUNTAS (crianças de 7 a 10 anos) - 8 perguntas por fase
-const questionsByLevel = {
+    const questionsByLevel = {
     1: [
-        { q: "Byte recolheu 48 garrafas de manhã e 37 à tarde. Quantas garrafas recolheu no total?", options: ["75", "85", "95"], answer: "85" },
-        { q: "A escola tinha 120 latinhas para reciclar. Já entregaram 45. Quantas ainda faltam entregar?", options: ["65", "75", "85"], answer: "75" },
-        { q: "Cada turma plantou 6 mudas. Com 7 turmas, quantas mudas foram plantadas?", options: ["36", "42", "48"], answer: "42" },
-        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [4, 30], options: ["4h30", "5h30", "6h20"], answer: "4h30" },
-        { q: "O mutirão começou às 8h e durou 3 horas. A que horas terminou?", options: ["10h", "11h", "12h"], answer: "11h" },
-        { q: "Byte tem 36 tampinhas e quer dividir igualmente em 4 caixas. Quantas tampinhas vão em cada caixa?", options: ["8", "9", "12"], answer: "9" },
-        { q: "Na horta foram plantadas 25 mudas pela manhã e 18 à tarde. Quantas mudas foram plantadas?", options: ["38", "43", "53"], answer: "43" },
-        { q: "A turma juntou 50 tampinhas e usou 17 em uma atividade. Quantas sobraram?", options: ["23", "33", "37"], answer: "33" }
+        { q: "Byte encontrou 24 tampinhas de manhã e 15 à tarde. Quantas encontrou ao todo?", options: ["39", "41", "49"], answer: "39" },
+        { q: "A turma tinha 50 cartões e usou 18. Quantos sobraram?", options: ["22", "32", "38"], answer: "32" },
+        { q: "Byte tinha 12 estrelas e ganhou mais 8. Quantas estrelas tem agora?", options: ["18", "20", "22"], answer: "20" },
+        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [3, 0], options: ["3h", "4h", "5h"], answer: "3h" },
+        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [4, 30], options: ["4h30", "5h30", "6h30"], answer: "4h30" },
+        { q: "A aula começou às 8h e terminou às 10h. Quanto tempo durou?", options: ["1 hora", "2 horas", "3 horas"], answer: "2 horas" },
+        { q: "Uma equipe tinha 35 livros e recebeu mais 20. Quantos livros tem agora?", options: ["45", "55", "65"], answer: "55" },
+        { q: "Byte tinha 40 pontos e perdeu 15. Com quantos pontos ficou?", options: ["15", "25", "35"], answer: "25" }
     ],
+
     2: [
-        { q: "Em um mutirão contra a dengue, 4 turmas eliminaram 28 focos cada uma. Quantos focos foram eliminados no total?", options: ["102", "112", "122"], answer: "112" },
-        { q: "Byte tinha 300 mudas e já plantou 138. Quantas mudas ainda restam?", options: ["162", "172", "238"], answer: "162" },
-        { q: "96 alunos formaram grupos de 8 pessoas. Quantos grupos foram formados?", options: ["10", "12", "14"], answer: "12" },
-        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [7, 45], options: ["7h45", "8h45", "9h35"], answer: "7h45" },
-        { q: "A oficina de reciclagem começou às 14h e terminou às 16h30. Quanto tempo ela durou?", options: ["2h", "2h30min", "3h30min"], answer: "2h30min" },
-        { q: "Uma hora tem 60 minutos. Quantos minutos existem em 2 horas e meia?", options: ["120", "150", "180"], answer: "150" },
-        { q: "Uma escola organizou 84 livros em 7 prateleiras iguais. Quantos livros ficaram em cada prateleira?", options: ["10", "12", "14"], answer: "12" },
-        { q: "Cada equipe recolheu 8 kg de papel. Se 9 equipes participaram, quantos quilos foram recolhidos?", options: ["64 kg", "72 kg", "80 kg"], answer: "72 kg" }
+        { q: "Quatro turmas plantaram 6 mudas cada. Quantas mudas foram plantadas?", options: ["20", "24", "28"], answer: "24" },
+        { q: "Byte tinha 36 estrelas e dividiu igualmente entre 4 amigos. Quantas cada um recebeu?", options: ["8", "9", "10"], answer: "9" },
+        { q: "Uma escola tinha 125 livros e recebeu mais 75. Quantos livros tem agora?", options: ["180", "200", "220"], answer: "200" },
+        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [7, 30], options: ["7h30", "8h30", "7h45"], answer: "7h30" },
+        { q: "Uma atividade começou às 14h e terminou às 16h. Quanto tempo durou?", options: ["1 hora", "2 horas", "3 horas"], answer: "2 horas" },
+        { q: "Quantos minutos existem em 2 horas?", options: ["60 minutos", "100 minutos", "120 minutos"], answer: "120 minutos" },
+        { q: "Uma professora organizou 48 lápis em 6 caixas iguais. Quantos lápis colocou em cada caixa?", options: ["6", "8", "10"], answer: "8" },
+        { q: "A brincadeira começou às 9h15 e terminou às 10h15. Quanto tempo durou?", options: ["30 minutos", "1 hora", "2 horas"], answer: "1 hora" }
     ],
+
     3: [
-        { q: "Byte coletou 5 caixas com 24 garrafas cada e usou 35 garrafas em uma oficina. Quantas garrafas sobraram?", options: ["85", "95", "155"], answer: "85" },
-        { q: "Um canteiro tem 9 fileiras com 15 mudas em cada uma. Quantas mudas há no canteiro?", options: ["125", "135", "145"], answer: "135" },
-        { q: "Para reciclar 144 kg de papel, 6 turmas ajudaram igualmente. Quantos kg cada turma juntou?", options: ["22 kg", "24 kg", "26 kg"], answer: "24 kg" },
-        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [10, 10], options: ["10h10", "2h50", "10h02"], answer: "10h10" },
-        { q: "O ônibus da excursão ecológica saiu às 9h40 e a viagem durou 1h35min. A que horas ele chegou?", options: ["11h05", "11h15", "11h25"], answer: "11h15" },
-        { q: "Byte começou a carregar a bateria às 15h50 e ela levou 25 minutos. A que horas terminou?", options: ["15h75", "16h15", "16h25"], answer: "16h15" },
-        { q: "Uma equipe organizou 7 caixas com 18 garrafas cada. Quantas garrafas organizou?", options: ["116", "126", "136"], answer: "126" },
-        { q: "168 sementes serão divididas igualmente em 7 canteiros. Quantas sementes vão em cada canteiro?", options: ["22", "24", "26"], answer: "24" }
-    ]
+        { q: "Byte encontrou 5 caixas com 24 estrelas cada. Quantas estrelas encontrou?", options: ["100", "120", "140"], answer: "120" },
+        { q: "Uma escola tinha 250 livros e emprestou 85. Quantos livros sobraram?", options: ["155", "165", "175"], answer: "165" },
+        { q: "Uma turma organizou 144 lápis em 6 caixas iguais. Quantos lápis ficaram em cada caixa?", options: ["22", "24", "26"], answer: "24" },
+        { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [10, 10], options: ["10h10", "10h20", "11h10"], answer: "10h10" },
+        { q: "A excursão saiu às 9h40 e durou 1h35min. A que horas chegou?", options: ["11h05", "11h15", "11h25"], answer: "11h15" },
+        { q: "Byte começou uma atividade às 15h50. Ela durou 25 minutos. A que horas terminou?", options: ["16h05", "16h15", "16h25"], answer: "16h15" },
+        { q: "Uma equipe organizou 7 caixas com 18 brinquedos cada. Quantos brinquedos organizou?", options: ["116", "126", "136"], answer: "126" },
+        { q: "Uma atividade começou às 13h20 e terminou às 14h50. Quanto tempo durou?", options: ["1h20min", "1h30min", "1h40min"], answer: "1h30min" }
+    ],
 };
 
 // ==========================================================
@@ -299,25 +301,26 @@ levels[5] = {
 
 
 questionsByLevel[4] = [
-    { q: 'Uma turma arrecadou 8 caixas com 24 livros cada. Quantos livros arrecadou?', options: ['182', '192', '202'], answer: '192' },
-    { q: 'A escola tinha 450 folhas para reciclar e usou 175. Quantas sobraram?', options: ['265', '275', '285'], answer: '275' },
-    { q: '72 sementes foram divididas igualmente entre 9 canteiros. Quantas por canteiro?', options: ['7', '8', '9'], answer: '8' },
-    { q: 'A atividade começou às 13h25 e durou 1h40. Quando terminou?', options: ['14h55', '15h05', '15h15'], answer: '15h05' },
-    { q: 'Há 12 equipes com 15 alunos em cada. Quantos alunos participam?', options: ['160', '170', '180'], answer: '180' },
-    { q: 'Uma coleta tinha 360 latinhas. Foram separadas em 6 grupos iguais. Quantas por grupo?', options: ['50', '60', '70'], answer: '60' },
-    { q: 'Uma escola montou 15 kits com 12 lápis cada. Quantos lápis foram usados?', options: ['170', '180', '190'], answer: '180' },
-    { q: '540 folhas foram distribuídas igualmente entre 6 salas. Quantas folhas cada sala recebeu?', options: ['80', '90', '100'], answer: '90' }
-];
+    { q: "Uma turma organizou 8 caixas com 24 livros cada. Quantos livros organizou?", options: ["182", "192", "202"], answer: "192" },
+        { q: "A escola tinha 450 folhas e utilizou 175. Quantas folhas sobraram?", options: ["265", "275", "285"], answer: "275" },
+        { q: "72 cartões foram divididos igualmente entre 9 grupos. Quantos cartões cada grupo recebeu?", options: ["7", "8", "9"], answer: "8" },
+        { q: "Uma atividade começou às 13h25 e durou 1h40min. Quando terminou?", options: ["14h55", "15h05", "15h15"], answer: "15h05" },
+        { q: "Há 12 equipes com 15 crianças em cada uma. Quantas crianças participam?", options: ["160", "170", "180"], answer: "180" },
+        { q: "Uma escola tinha 360 livros. Eles foram divididos igualmente entre 6 salas. Quantos livros cada sala recebeu?", options: ["50", "60", "70"], answer: "60" },
+        { q: "Uma professora montou 15 kits com 12 lápis cada. Quantos lápis foram usados?", options: ["170", "180", "190"], answer: "180" },
+        { q: "Uma apresentação começou às 14h35 e terminou às 16h10. Quanto tempo durou?", options: ["1h25min", "1h35min", "1h45min"], answer: "1h35min" }
+    ],
+
 questionsByLevel[5] = [
-    { q: 'Desafio bônus: 3 turmas recolheram 125 tampinhas cada. Quantas tampinhas no total?', options: ['275', '375', '425'], answer: '375' },
-    { q: 'Byte tem 240 sementes e planta 4/6 delas. Quantas sementes plantou?', options: ['120', '160', '180'], answer: '160' },
-    { q: 'Uma trilha tem 1.250 metros. A equipe percorreu 875 metros. Quantos faltam?', options: ['325 m', '375 m', '425 m'], answer: '375 m' },
-    { q: 'Uma oficina durou 2h15min e começou às 9h30. Quando terminou?', options: ['11h15', '11h45', '12h15'], answer: '11h45' },
-    { q: 'Cinco equipes recolheram 48 kg de papel cada. Qual foi o total?', options: ['220 kg', '240 kg', '260 kg'], answer: '240 kg' },
-    { q: 'Desafio criativo: 96 mudas serão divididas em 8 fileiras iguais. Quantas por fileira?', options: ['10', '12', '14'], answer: '12' },
-    { q: 'Oito equipes recolheram 125 tampinhas cada. Quantas tampinhas foram recolhidas?', options: ['900', '1.000', '1.100'], answer: '1.000' },
-    { q: 'Uma escola tinha 200 mudas e plantou três quartos delas. Quantas mudas foram plantadas?', options: ['100', '150', '175'], answer: '150' }
-];
+    { q: "Desafio bônus: 3 turmas recolheram 125 tampinhas cada. Quantas tampinhas recolheram ao todo?", options: ["275", "375", "425"], answer: "375" },
+        { q: "Byte tinha 240 estrelas e ganhou mais 185. Quantas estrelas tem agora?", options: ["415", "425", "435"], answer: "425" },
+        { q: "Uma trilha tem 1.250 metros. A equipe percorreu 875 metros. Quantos metros faltam?", options: ["325", "375", "425"], answer: "375" },
+        { q: "Uma oficina começou às 9h30 e durou 2h15min. Quando terminou?", options: ["11h15", "11h45", "12h15"], answer: "11h45" },
+        { q: "Cinco equipes conseguiram 48 pontos cada. Quantos pontos fizeram juntas?", options: ["220", "240", "260"], answer: "240" },
+        { q: "96 cartões serão divididos igualmente entre 8 crianças. Quantos cartões cada uma receberá?", options: ["10", "12", "14"], answer: "12" },
+        { q: "Oito equipes conseguiram 125 pontos cada. Quantos pontos fizeram ao todo?", options: ["900", "1.000", "1.100"], answer: "1.000" },
+        { q: "Uma competição começou às 8h45 e terminou às 12h15. Quanto tempo durou?", options: ["3h30min", "3h45min", "4h"], answer: "3h30min" }
+    ];
 
 function getSavedProgress() {
     try { return JSON.parse(localStorage.getItem('aventuraMatematicaProgress') || '{"completedLevels":[],"score":0,"achievements":[]}'); }
