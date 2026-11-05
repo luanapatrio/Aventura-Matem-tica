@@ -908,7 +908,6 @@ function buildIntro(scene) {
 
     txt(cx, 440, '←  →  andar        ↑  pular        ↓  trocar o módulo do Byte', 24, '#ffffff', true);
     txt(cx, 490, 'Módulo FOGO atravessa a lava.   Módulo ÁGUA atravessa a água.', 22, '#cbd5e1', false);
-    txt(cx, 525, 'O ácido verde é perigoso para os dois: pule por cima!', 22, '#bef264', false);
     txt(cx, 560, 'Colete todos os chips, vença os desafios de matemática e chegue à porta.', 22, '#cbd5e1', false);
 
     const prompt = txt(cx, 636, 'Clique ou pressione ESPAÇO para começar', 28, '#fbbf24', true);
