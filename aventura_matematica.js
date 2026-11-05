@@ -897,7 +897,7 @@ function buildIntro(scene) {
     }).setOrigin(0.5));
 
     add(scene.add.rectangle(cx, GAME_H / 2, GAME_W, GAME_H, 0x020617, 0.93));
-    txt(cx, 90, 'AVENTURA MATEMÁTICA 2D', 52, '#2dd4bf', true);
+    txt(cx, 90, 'O MUNDO DO BYTE', 52, '#2dd4bf', true);
     txt(cx, 148, 'A Missão de Byte', 30, '#e2e8f0', true);
 
     add(scene.add.image(cx - 150, 270, 'byte_water').setScale(2.4));
