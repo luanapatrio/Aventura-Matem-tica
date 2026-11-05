@@ -1875,5 +1875,21 @@ function drawClock(scene, x, y, r, hours, minutes, add) {
     g.fillCircle(x, y, 5);
 }
 
+async function lockLandscape() {
+    try {
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock("landscape");
+        }
+    } catch (error) {
+        console.log("O navegador não permite bloquear a orientação.");
+    }
+}
+
+document.addEventListener("fullscreenchange", () => {
+    if (document.fullscreenElement) {
+        lockLandscape();
+    }
+});
+
 // Inicializa o jogo Phaser
 const game = new Phaser.Game(config);

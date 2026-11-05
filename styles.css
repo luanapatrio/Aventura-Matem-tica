@@ -1155,3 +1155,39 @@ html, body {
     max-height: 100%;
     object-fit: contain;
 }
+
+/* Orientação horizontal em celulares e tablets */
+@media screen and (max-width: 900px) and (orientation: portrait) {
+    #rotate-message {
+        display: flex;
+    }
+
+    #game-container {
+        display: none !important;
+    }
+}
+
+#rotate-message {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #07152f;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 25px;
+}
+
+#rotate-message .rotate-icon {
+    font-size: 65px;
+    margin-bottom: 20px;
+    animation: rotate-phone 2s infinite ease-in-out;
+}
+
+@keyframes rotate-phone {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+}
