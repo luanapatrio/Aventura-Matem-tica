@@ -71,9 +71,8 @@ let introEls = [];
 
 const HZ_COLOR = { fire: 0xf97316, water: 0x38bdf8, acid: 0x84cc16 };
 
-// ==========================================================
+
 // PERGUNTAS (crianças de 7 a 10 anos) - 8 perguntas por fase
-// ==========================================================
 const questionsByLevel = {
     1: [
         { q: "Byte recolheu 48 garrafas de manhã e 37 à tarde. Quantas garrafas recolheu no total?", options: ["75", "85", "95"], answer: "85" },
