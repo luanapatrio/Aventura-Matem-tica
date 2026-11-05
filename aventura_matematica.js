@@ -13,11 +13,11 @@ const config = {
     backgroundColor: '#0b1220',
 
     scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 1280,
-        height: 720
-    },
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 1280,
+    height: 720
+},
     physics: {
         default: 'arcade',
         arcade: {
@@ -73,7 +73,7 @@ const HZ_COLOR = { fire: 0xf97316, water: 0x38bdf8, acid: 0x84cc16 };
 
 
 // PERGUNTAS (crianças de 7 a 10 anos) - 8 perguntas por fase
-const questionsByLevel = {
+    const questionsByLevel = {
     1: [
         { q: "Byte encontrou 24 tampinhas de manhã e 15 à tarde. Quantas encontrou ao todo?", options: ["39", "41", "49"], answer: "39" },
         { q: "A turma tinha 50 cartões e usou 18. Quantos sobraram?", options: ["22", "32", "38"], answer: "32" },
@@ -302,17 +302,17 @@ levels[5] = {
 
 questionsByLevel[4] = [
     { q: "Uma turma organizou 8 caixas com 24 livros cada. Quantos livros organizou?", options: ["182", "192", "202"], answer: "192" },
-    { q: "A escola tinha 450 folhas e utilizou 175. Quantas folhas sobraram?", options: ["265", "275", "285"], answer: "275" },
-    { q: "72 cartões foram divididos igualmente entre 9 grupos. Quantos cartões cada grupo recebeu?", options: ["7", "8", "9"], answer: "8" },
-    { q: "Uma atividade começou às 13h25 e durou 1h40min. Quando terminou?", options: ["14h55", "15h05", "15h15"], answer: "15h05" },
-    { q: "Há 12 equipes com 15 crianças em cada uma. Quantas crianças participam?", options: ["160", "170", "180"], answer: "180" },
-    { q: "Uma escola tinha 360 livros. Eles foram divididos igualmente entre 6 salas. Quantos livros cada sala recebeu?", options: ["50", "60", "70"], answer: "60" },
-    { q: "Uma professora montou 15 kits com 12 lápis cada. Quantos lápis foram usados?", options: ["170", "180", "190"], answer: "180" },
-    { q: "Uma apresentação começou às 14h35 e terminou às 16h10. Quanto tempo durou?", options: ["1h25min", "1h35min", "1h45min"], answer: "1h35min" }
-],
+        { q: "A escola tinha 450 folhas e utilizou 175. Quantas folhas sobraram?", options: ["265", "275", "285"], answer: "275" },
+        { q: "72 cartões foram divididos igualmente entre 9 grupos. Quantos cartões cada grupo recebeu?", options: ["7", "8", "9"], answer: "8" },
+        { q: "Uma atividade começou às 13h25 e durou 1h40min. Quando terminou?", options: ["14h55", "15h05", "15h15"], answer: "15h05" },
+        { q: "Há 12 equipes com 15 crianças em cada uma. Quantas crianças participam?", options: ["160", "170", "180"], answer: "180" },
+        { q: "Uma escola tinha 360 livros. Eles foram divididos igualmente entre 6 salas. Quantos livros cada sala recebeu?", options: ["50", "60", "70"], answer: "60" },
+        { q: "Uma professora montou 15 kits com 12 lápis cada. Quantos lápis foram usados?", options: ["170", "180", "190"], answer: "180" },
+        { q: "Uma apresentação começou às 14h35 e terminou às 16h10. Quanto tempo durou?", options: ["1h25min", "1h35min", "1h45min"], answer: "1h35min" }
+    ],
 
-    questionsByLevel[5] = [
-        { q: "Desafio bônus: 3 turmas recolheram 125 tampinhas cada. Quantas tampinhas recolheram ao todo?", options: ["275", "375", "425"], answer: "375" },
+questionsByLevel[5] = [
+    { q: "Desafio bônus: 3 turmas recolheram 125 tampinhas cada. Quantas tampinhas recolheram ao todo?", options: ["275", "375", "425"], answer: "375" },
         { q: "Byte tinha 240 estrelas e ganhou mais 185. Quantas estrelas tem agora?", options: ["415", "425", "435"], answer: "425" },
         { q: "Uma trilha tem 1.250 metros. A equipe percorreu 875 metros. Quantos metros faltam?", options: ["325", "375", "425"], answer: "375" },
         { q: "Uma oficina começou às 9h30 e durou 2h15min. Quando terminou?", options: ["11h15", "11h45", "12h15"], answer: "11h45" },
@@ -1347,46 +1347,46 @@ function loadLevel(level) {
 
     // ----- chips -----
 
-    data.chips.forEach((c, i) => {
+data.chips.forEach((c, i) => {
 
-        const plataforma = data.platforms
-            .filter(p =>
-                c.x >= p.x &&
-                c.x <= p.x + p.w &&
-                p.y < FLOOR_Y
-            )
-            .sort((a, b) =>
-                Math.abs((a.y - 36) - c.y) -
-                Math.abs((b.y - 36) - c.y)
-            )[0];
+    const plataforma = data.platforms
+        .filter(p =>
+            c.x >= p.x &&
+            c.x <= p.x + p.w &&
+            p.y < FLOOR_Y
+        )
+        .sort((a, b) =>
+            Math.abs((a.y - 36) - c.y) -
+            Math.abs((b.y - 36) - c.y)
+        )[0];
 
-        const chipY = plataforma ? plataforma.y - 36 : c.y;
+    const chipY = plataforma ? plataforma.y - 36 : c.y;
 
-        const glow = scene.add.image(c.x, chipY, 'glow')
-            .setTint(0xfde047)
-            .setBlendMode(Phaser.BlendModes.ADD)
-            .setDepth(8)
-            .setAlpha(0.8)
-            .setScale(1.1);
+    const glow = scene.add.image(c.x, chipY, 'glow')
+        .setTint(0xfde047)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(8)
+        .setAlpha(0.8)
+        .setScale(1.1);
 
-        const chip = items.create(c.x, chipY, 'chip')
-            .setDepth(9);
+    const chip = items.create(c.x, chipY, 'chip')
+        .setDepth(9);
 
-        chip.glow = glow;
+    chip.glow = glow;
 
-        levelObjects.push(glow);
+    levelObjects.push(glow);
 
-        scene.tweens.add({
-            targets: [chip, glow],
-            y: '-=9',
-            duration: 900,
-            delay: i * 150,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
+    scene.tweens.add({
+        targets: [chip, glow],
+        y: '-=9',
+        duration: 900,
+        delay: i * 150,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
     });
+
+});
 
     // ----- porta -----
     door.setTexture('door_closed');
@@ -1495,7 +1495,7 @@ function enterDoor() {
             levelTransitioning = false;
         });
 
-        // Fase 4: liberar a fase bônus
+    // Fase 4: liberar a fase bônus
     } else if (currentLevel === 4) {
         showMessage(
             scene,
@@ -1519,7 +1519,7 @@ function enterDoor() {
             levelTransitioning = false;
         });
 
-        // Fase bônus: finalizar o jogo
+    // Fase bônus: finalizar o jogo
     } else if (currentLevel === 5) {
         saveProgress();
 
@@ -1952,6 +1952,62 @@ async function lockLandscape() {
     }
 }
 
+function mostrarToast(mensagem, duracao = 4000) {
+    let toast = document.getElementById('toast-aventura');
+
+    if (toast) {
+        toast.remove();
+    }
+
+    toast = document.createElement('div');
+    toast.id = 'toast-aventura';
+
+    toast.innerHTML = `
+        <strong>🚀 Aventura Matemática</strong>
+        <p></p>
+    `;
+
+    toast.querySelector('p').textContent = mensagem;
+
+    Object.assign(toast.style, {
+        position: 'fixed',
+        top: '25px',
+        right: '25px',
+        width: 'min(380px, calc(100% - 40px))',
+        padding: '18px 20px',
+        background: '#ffffff',
+        color: '#26334a',
+        borderLeft: '5px solid #f59e0b',
+        borderRadius: '14px',
+        boxShadow: '0 5px 20px rgba(0,0,0,0.25)',
+        fontFamily: 'Arial, sans-serif',
+        zIndex: '999999',
+        opacity: '0',
+        transform: 'translateX(30px)',
+        transition: 'all 0.4s ease'
+    });
+
+    toast.querySelector('strong').style.cssText =
+        'display:block;color:#234b83;font-size:16px;margin-bottom:8px;';
+
+    toast.querySelector('p').style.cssText =
+        'margin:0;font-size:14px;line-height:1.5;';
+
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(30px)';
+
+        setTimeout(() => toast.remove(), 400);
+    }, duracao);
+}
+
 document.addEventListener("fullscreenchange", () => {
     if (document.fullscreenElement) {
         lockLandscape();
@@ -2011,26 +2067,7 @@ function showEndScreen(scene) {
     message.setDepth(1001);
 
     elements.push(message);
-    function mostrarToast(mensagem, duracao = 4000) {
-        const toast = document.createElement('div');
 
-        toast.className = 'toast-aventura';
-
-        toast.innerHTML = `
-        <strong>🚀 Aventura Matemática</strong>
-        <p>${mensagem}</p>
-    `;
-
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.classList.add('toast-saida');
-
-            setTimeout(() => {
-                toast.remove();
-            }, 400);
-        }, duracao);
-    }
     // Pontuação
     const finalScore = scene.add.text(
         640,
