@@ -1346,22 +1346,47 @@ function loadLevel(level) {
     });
 
     // ----- chips -----
-    data.chips.forEach((c, i) => {
-        const glow = scene.add.image(c.x, c.y, 'glow').setTint(0xfde047).setBlendMode(Phaser.BlendModes.ADD)
-            .setDepth(8).setAlpha(0.8).setScale(1.1);
-        const chip = items.create(c.x, c.y, 'chip').setDepth(9);
-        chip.glow = glow;
-        levelObjects.push(glow);
-        scene.tweens.add({
-            targets: [chip, glow],
-            y: '-=9',
-            duration: 900,
-            delay: i * 150,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+
+data.chips.forEach((c, i) => {
+
+    const plataforma = data.platforms
+        .filter(p =>
+            c.x >= p.x &&
+            c.x <= p.x + p.w &&
+            p.y < FLOOR_Y
+        )
+        .sort((a, b) =>
+            Math.abs((a.y - 36) - c.y) -
+            Math.abs((b.y - 36) - c.y)
+        )[0];
+
+    const chipY = plataforma ? plataforma.y - 36 : c.y;
+
+    const glow = scene.add.image(c.x, chipY, 'glow')
+        .setTint(0xfde047)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(8)
+        .setAlpha(0.8)
+        .setScale(1.1);
+
+    const chip = items.create(c.x, chipY, 'chip')
+        .setDepth(9);
+
+    chip.glow = glow;
+
+    levelObjects.push(glow);
+
+    scene.tweens.add({
+        targets: [chip, glow],
+        y: '-=9',
+        duration: 900,
+        delay: i * 150,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
     });
+
+});
 
     // ----- porta -----
     door.setTexture('door_closed');
@@ -1440,35 +1465,78 @@ function enterDoor() {
     if (!doorOpen || quizActive || levelTransitioning || respawning) return;
 
     levelTransitioning = true;
+
     const scene = this;
     const cam = scene.cameras.main;
 
     markLevelComplete(currentLevel);
-    if (currentLevel < maxLevels) {
-        showMessage(scene, `Muito bem! Fase ${currentLevel} concluída!`, '#34d399', 1600);
-        scene.time.delayedCall(1300, () => cam.fadeOut(400, 11, 18, 32));
+
+    // Fases 1, 2 e 3: avançar normalmente
+    if (currentLevel < 4) {
+        showMessage(
+            scene,
+            `Muito bem! Fase ${currentLevel} concluída!`,
+            '#34d399',
+            1600
+        );
+
+        scene.time.delayedCall(1300, () => {
+            cam.fadeOut(400, 11, 18, 32);
+        });
+
         scene.time.delayedCall(1750, () => {
             currentLevel++;
+
             loadLevel.call(scene, currentLevel);
+
             cam.fadeIn(400, 11, 18, 32);
             announceLevel(scene);
+
             levelTransitioning = false;
         });
-    } else if (currentLevel === maxLevels) {
-        showMessage(scene, 'Você concluiu as 4 fases! A fase bônus foi liberada!', '#fbbf24', 3000);
-        scene.time.delayedCall(2400, () => cam.fadeOut(400, 11, 18, 32));
+
+    // Fase 4: liberar a fase bônus
+    } else if (currentLevel === 4) {
+        showMessage(
+            scene,
+            'Você concluiu as 4 fases! A fase bônus foi liberada!',
+            '#fbbf24',
+            3000
+        );
+
+        scene.time.delayedCall(2400, () => {
+            cam.fadeOut(400, 11, 18, 32);
+        });
+
         scene.time.delayedCall(2850, () => {
             currentLevel = 5;
+
             loadLevel.call(scene, currentLevel);
+
             cam.fadeIn(400, 11, 18, 32);
             announceLevel(scene);
+
             levelTransitioning = false;
         });
-    } else {
+
+    // Fase bônus: finalizar o jogo
+    } else if (currentLevel === 5) {
         saveProgress();
 
-        scene.time.delayedCall(800, () => {
+        showMessage(
+            scene,
+            'Parabéns! Você concluiu todas as fases!',
+            '#fbbf24',
+            3000
+        );
+
+        scene.time.delayedCall(2200, () => {
+            cam.fadeOut(500, 11, 18, 32);
+        });
+
+        scene.time.delayedCall(2800, () => {
             showEndScreen(scene);
+            cam.fadeIn(500, 11, 18, 32);
         });
     }
 }
@@ -1889,6 +1957,169 @@ document.addEventListener("fullscreenchange", () => {
         lockLandscape();
     }
 });
+function showEndScreen(scene) {
+    levelTransitioning = true;
 
+    const elements = [];
+
+    // Fundo escuro
+    const background = scene.add.rectangle(
+        0, 0, 1280, 720, 0x071426, 0.96
+    );
+
+    background.setOrigin(0, 0);
+    background.setScrollFactor(0);
+    background.setDepth(1000);
+
+    elements.push(background);
+
+    // Título
+    const title = scene.add.text(
+        640,
+        55,
+        'MISSÃO CONCLUÍDA!',
+        {
+            fontFamily: 'Arial',
+            fontSize: '46px',
+            fontStyle: 'bold',
+            color: '#ffb347',
+            align: 'center'
+        }
+    );
+
+    title.setOrigin(0.5);
+    title.setScrollFactor(0);
+    title.setDepth(1001);
+
+    elements.push(title);
+
+    // Mensagem de parabéns
+    const message = scene.add.text(
+        640,
+        115,
+        'Parabéns! Você completou todas as fases da Aventura Matemática!',
+        {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#ffffff',
+            align: 'center'
+        }
+    );
+
+    message.setOrigin(0.5);
+    message.setScrollFactor(0);
+    message.setDepth(1001);
+
+    elements.push(message);
+
+    // Pontuação
+    const finalScore = scene.add.text(
+        640,
+        160,
+        `Pontuação final: ${score}`,
+        {
+            fontFamily: 'Arial',
+            fontSize: '26px',
+            fontStyle: 'bold',
+            color: '#ffd166',
+            align: 'center'
+        }
+    );
+
+    finalScore.setOrigin(0.5);
+    finalScore.setScrollFactor(0);
+    finalScore.setDepth(1001);
+
+    elements.push(finalScore);
+
+    // Créditos
+    const credits = scene.add.text(
+        640,
+        220,
+        `DESENVOLVIMENTO
+
+Luana Andrade
+Fernanda Ribeiro Rios
+Gabrielle Santos Silva
+Izabela Silva Santos
+Wellington Carmo
+Lucas de Paula Claudino
+Gabriel Torquato Silva
+
+Itinerário Extensionista 2
+Professor: João Roberto Ursino
+
+Grupo Wall Tech • 2026`,
+        {
+            fontFamily: 'Arial',
+            fontSize: '19px',
+            color: '#ffffff',
+            align: 'center',
+            lineSpacing: 5
+        }
+    );
+
+    credits.setOrigin(0.5, 0);
+    credits.setScrollFactor(0);
+    credits.setDepth(1001);
+
+    elements.push(credits);
+
+    // Botão jogar novamente
+    const button = scene.add.text(
+        640,
+        650,
+        'JOGAR NOVAMENTE',
+        {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            fontStyle: 'bold',
+            color: '#071426',
+            backgroundColor: '#ffb347',
+            padding: {
+                x: 28,
+                y: 14
+            }
+        }
+    );
+
+    button.setOrigin(0.5);
+    button.setScrollFactor(0);
+    button.setDepth(1002);
+    button.setInteractive({ useHandCursor: true });
+
+    elements.push(button);
+
+    button.on('pointerover', () => {
+        button.setStyle({
+            backgroundColor: '#ffd166'
+        });
+    });
+
+    button.on('pointerout', () => {
+        button.setStyle({
+            backgroundColor: '#ffb347'
+        });
+    });
+
+    button.on('pointerdown', () => {
+        // Remover tela final
+        elements.forEach(element => element.destroy());
+
+        // Reiniciar o jogo
+        currentLevel = 1;
+        score = 0;
+        collectedChips = 0;
+        doorOpen = false;
+        quizActive = false;
+        levelTransitioning = false;
+        respawning = false;
+        gameStarted = true;
+
+        // Carregar primeira fase
+        loadLevel.call(scene, currentLevel);
+        announceLevel(scene);
+    });
+}
 // Inicializa o jogo Phaser
 const game = new Phaser.Game(config);
