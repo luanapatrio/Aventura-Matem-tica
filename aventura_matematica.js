@@ -1813,7 +1813,7 @@ function showQuizModal(questionData) {
 
     // Narração automática ao abrir a pergunta
     readQuestion();
-    add(scene.add.text(cx, cy + 185, 'Clique na opção ou pressione as teclas 1, 2 ou 3', {
+    add(scene.add.text(cx, cy + 185, 'Clique na opção', {
         fontFamily: FONT, fontSize: '16px', color: '#94a3b8'
     }).setOrigin(0.5)).setDepth(152);
 
