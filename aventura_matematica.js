@@ -1239,8 +1239,18 @@ function buildLevelScenery(scene, level) {
         g.fillCircle(1050, 180, 100);
 
         g.fillStyle(0xfbbf24, 1);
+        // (Graphics do Phaser não tem fillStar, então a estrela é desenhada com pontos)
+        const drawStar = (cx, cy, spikes, innerR, outerR) => {
+            const pts = [];
+            for (let k = 0; k < spikes * 2; k++) {
+                const r = k % 2 === 0 ? outerR : innerR;
+                const a = -Math.PI / 2 + k * Math.PI / spikes;
+                pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+            }
+            g.fillPoints(pts, true);
+        };
         [150, 650, 900, 1350, 2050].forEach((x, i) => {
-            g.fillStar(x, 120 + (i % 2) * 100, 5, 12, 28);
+            drawStar(x, 120 + (i % 2) * 100, 5, 12, 28);
         });
 
         // Ilhas espaciais
@@ -1682,8 +1692,14 @@ function showEndScreen(scene) {
         quizActive = false;
         gameStarted = true;
         levelTransitioning = false;
+        respawning = false;
+
+        // Religa a física (ela foi pausada ao terminar a fase bônus)
+        scene.physics.resume();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         loadLevel.call(scene, currentLevel);
+        scene.cameras.main.fadeIn(400, 11, 18, 32);
         announceLevel(scene);
     });
 }
@@ -1813,7 +1829,7 @@ function showQuizModal(questionData) {
 
     // Narração automática ao abrir a pergunta
     readQuestion();
-    add(scene.add.text(cx, cy + 185, 'Clique na opção', {
+    add(scene.add.text(cx, cy + 185, 'Clique na opção ou pressione as teclas 1, 2 ou 3', {
         fontFamily: FONT, fontSize: '16px', color: '#94a3b8'
     }).setOrigin(0.5)).setDepth(152);
 
