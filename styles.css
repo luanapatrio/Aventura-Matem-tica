@@ -1198,3 +1198,54 @@ html, body {
         left: -80px;
     }
 }
+
+.toast-aventura {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 99999;
+    width: min(380px, calc(100% - 40px));
+    padding: 18px 20px;
+    background: #ffffff;
+    color: #26334a;
+    border-left: 5px solid #f59e0b;
+    border-radius: 14px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.20);
+    font-family: Arial, sans-serif;
+    animation: toastEntrada 0.4s ease;
+}
+
+.toast-aventura strong {
+    display: block;
+    color: #234b83;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.toast-aventura p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.toast-saida {
+    animation: toastSaida 0.4s ease forwards;
+}
+
+@keyframes toastEntrada {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes toastSaida {
+    to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+}
