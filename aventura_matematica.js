@@ -1,10 +1,10 @@
 const GAME_W = 1280;
 const GAME_H = 720;
 const FLOOR_Y = 660;      // topo do chão
-const HAZ_H = 24;         // altura das poças
+const HAZ_H = 18;         // altura das poças
 const PIPE_BOTTOM = 570;  // base dos túneis (corredor de 90px até o chão)
-const PLAYER_SPEED = 230;
-const JUMP_FORCE = -640;
+const PLAYER_SPEED = 210;
+const JUMP_FORCE = -680;
 let FONT = 'Trebuchet MS, Verdana, Arial, sans-serif';
 
 const config = {
@@ -43,7 +43,9 @@ let score = 0;
 let currentLevel = 1;
 const maxLevels = 4;
 let scoreText, levelText, chipsText, modeText, modeDot;
-let bgStars, bgCity, bgGrid;
+let bgStars, bgCity, bgGrid, bgSky;
+let sceneryObjects = [];
+
 
 let gameStarted = false;
 let quizActive = false;
@@ -69,7 +71,7 @@ let introEls = [];
 const HZ_COLOR = { fire: 0xf97316, water: 0x38bdf8, acid: 0x84cc16 };
 
 // ==========================================================
-// PERGUNTAS (crianças de 7 a 10 anos) - 6 por fase, 4 sorteadas
+// PERGUNTAS (crianças de 7 a 10 anos) - 8 perguntas por fase
 // ==========================================================
 const questionsByLevel = {
     1: [
@@ -78,7 +80,9 @@ const questionsByLevel = {
         { q: "Cada turma plantou 6 mudas. Com 7 turmas, quantas mudas foram plantadas?", options: ["36", "42", "48"], answer: "42" },
         { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [4, 30], options: ["4h30", "5h30", "6h20"], answer: "4h30" },
         { q: "O mutirão começou às 8h e durou 3 horas. A que horas terminou?", options: ["10h", "11h", "12h"], answer: "11h" },
-        { q: "Byte tem 36 tampinhas e quer dividir igualmente em 4 caixas. Quantas tampinhas vão em cada caixa?", options: ["8", "9", "12"], answer: "9" }
+        { q: "Byte tem 36 tampinhas e quer dividir igualmente em 4 caixas. Quantas tampinhas vão em cada caixa?", options: ["8", "9", "12"], answer: "9" },
+        { q: "Na horta foram plantadas 25 mudas pela manhã e 18 à tarde. Quantas mudas foram plantadas?", options: ["38", "43", "53"], answer: "43" },
+        { q: "A turma juntou 50 tampinhas e usou 17 em uma atividade. Quantas sobraram?", options: ["23", "33", "37"], answer: "33" }
     ],
     2: [
         { q: "Em um mutirão contra a dengue, 4 turmas eliminaram 28 focos cada uma. Quantos focos foram eliminados no total?", options: ["102", "112", "122"], answer: "112" },
@@ -86,7 +90,9 @@ const questionsByLevel = {
         { q: "96 alunos formaram grupos de 8 pessoas. Quantos grupos foram formados?", options: ["10", "12", "14"], answer: "12" },
         { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [7, 45], options: ["7h45", "8h45", "9h35"], answer: "7h45" },
         { q: "A oficina de reciclagem começou às 14h e terminou às 16h30. Quanto tempo ela durou?", options: ["2h", "2h30min", "3h30min"], answer: "2h30min" },
-        { q: "Uma hora tem 60 minutos. Quantos minutos existem em 2 horas e meia?", options: ["120", "150", "180"], answer: "150" }
+        { q: "Uma hora tem 60 minutos. Quantos minutos existem em 2 horas e meia?", options: ["120", "150", "180"], answer: "150" },
+        { q: "Uma escola organizou 84 livros em 7 prateleiras iguais. Quantos livros ficaram em cada prateleira?", options: ["10", "12", "14"], answer: "12" },
+        { q: "Cada equipe recolheu 8 kg de papel. Se 9 equipes participaram, quantos quilos foram recolhidos?", options: ["64 kg", "72 kg", "80 kg"], answer: "72 kg" }
     ],
     3: [
         { q: "Byte coletou 5 caixas com 24 garrafas cada e usou 35 garrafas em uma oficina. Quantas garrafas sobraram?", options: ["85", "95", "155"], answer: "85" },
@@ -94,7 +100,9 @@ const questionsByLevel = {
         { q: "Para reciclar 144 kg de papel, 6 turmas ajudaram igualmente. Quantos kg cada turma juntou?", options: ["22 kg", "24 kg", "26 kg"], answer: "24 kg" },
         { q: "Que horas o relógio está marcando?\n(ponteiro curto = horas, ponteiro longo = minutos)", clock: [10, 10], options: ["10h10", "2h50", "10h02"], answer: "10h10" },
         { q: "O ônibus da excursão ecológica saiu às 9h40 e a viagem durou 1h35min. A que horas ele chegou?", options: ["11h05", "11h15", "11h25"], answer: "11h15" },
-        { q: "Byte começou a carregar a bateria às 15h50 e ela levou 25 minutos. A que horas terminou?", options: ["15h75", "16h15", "16h25"], answer: "16h15" }
+        { q: "Byte começou a carregar a bateria às 15h50 e ela levou 25 minutos. A que horas terminou?", options: ["15h75", "16h15", "16h25"], answer: "16h15" },
+        { q: "Uma equipe organizou 7 caixas com 18 garrafas cada. Quantas garrafas organizou?", options: ["116", "126", "136"], answer: "126" },
+        { q: "168 sementes serão divididas igualmente em 7 canteiros. Quantas sementes vão em cada canteiro?", options: ["22", "24", "26"], answer: "24" }
     ]
 };
 
@@ -117,11 +125,11 @@ const levels = {
             { x: 1780, y: 210, w: 170, h: 20 }
         ],
         hazards: [
-            { type: 'fire', x: 520, w: 160, tunnel: true },
-            { type: 'water', x: 1180, w: 160, tunnel: true }
+            { type: 'fire', x: 540, w: 100 },
+            { type: 'water', x: 1200, w: 100 }
         ],
         chips: [
-            { x: 250, y: 504 }, { x: 840, y: 504 }, { x: 1060, y: 394 }, { x: 1515, y: 284 }
+            { x: 240, y: 620 }, { x: 590, y: 590 }, { x: 850, y: 620 }, { x: 1000, y: 620 }, { x: 1250, y: 590 }, { x: 1450, y: 620 }, { x: 1650, y: 620 }, { x: 1810, y: 620 }
         ],
         door: { x: 1865, y: 170 },
         signs: [
@@ -144,18 +152,16 @@ const levels = {
             { x: 1620, y: 540, w: 130, h: 20 }
         ],
         hazards: [
-            { type: 'acid', x: 380, w: 140 },
-            { type: 'fire', x: 800, w: 160, tunnel: true },
-            { type: 'water', x: 1400, w: 160, tunnel: true }
+            { type: 'fire', x: 820, w: 100 },
+            { type: 'water', x: 1420, w: 100 }
         ],
         chips: [
-            { x: 215, y: 504 }, { x: 660, y: 484 }, { x: 1305, y: 394 }, { x: 1685, y: 504 }
+            { x: 220, y: 620 }, { x: 600, y: 620 }, { x: 870, y: 590 }, { x: 1120, y: 620 }, { x: 1470, y: 590 }, { x: 1600, y: 620 }, { x: 1750, y: 620 }, { x: 1900, y: 620 }
         ],
         lever: { x: 1115, y: 320 },
         gate: { x: 1790, y: 0, w: 30, h: 660 },
         door: { x: 1900, y: 620 },
         signs: [
-            { x: 320, y: 640, text: 'Ácido verde!\nPule por cima!' },
             { x: 725, y: 640, text: 'Lava!\n↓ Módulo FOGO' },
             { x: 1325, y: 640, text: 'Água!\n↓ Módulo ÁGUA' },
             { x: 1115, y: 262, text: 'Alavanca!' },
@@ -176,39 +182,121 @@ const levels = {
             { x: 1230, y: 320, w: 150, h: 20 }
         ],
         hazards: [
-            { type: 'fire', x: 380, w: 160, tunnel: true },
-            { type: 'acid', x: 700, w: 130 },
-            { type: 'water', x: 1000, w: 160, tunnel: true },
-            { type: 'acid', x: 1560, w: 120 },
-            { type: 'fire', x: 1840, w: 160, tunnel: true }
+            { type: 'fire', x: 400, w: 100 },
+            { type: 'water', x: 1020, w: 100 }
         ],
         chips: [
-            { x: 175, y: 504 }, { x: 655, y: 494 }, { x: 910, y: 394 }, { x: 1495, y: 394 }
+            { x: 200, y: 620 }, { x: 450, y: 590 }, { x: 700, y: 620 }, { x: 900, y: 620 }, { x: 1070, y: 590 }, { x: 1300, y: 620 }, { x: 1550, y: 620 }, { x: 1800, y: 620 }
         ],
         lever: { x: 1305, y: 320 },
         gate: { x: 1740, y: 0, w: 30, h: 660 },
         door: { x: 2100, y: 620 },
         signs: [
             { x: 290, y: 640, text: 'Lava!\n↓ Módulo FOGO' },
-            { x: 635, y: 640, text: 'Ácido!\nPule!' },
             { x: 925, y: 640, text: 'Água!\n↓ Módulo ÁGUA' },
             { x: 1305, y: 262, text: 'Alavanca!' },
             { x: 1650, y: 500, text: 'Barreira de energia!\nUse a alavanca' },
-            { x: 1803, y: 640, text: 'Lava!\n↓ FOGO' }
         ]
     }
 };
 
 // Fase 4 e fase bônus reutilizam a estrutura visual da fase 3, com nomes e desafios próprios.
 // A arquitetura pode receber mapas exclusivos depois sem alterar a progressão.
+
 levels[4] = {
-    ...levels[3], name: 'Desafio Final da Escola', width: 2200,
-    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 }
+    name: 'Cidade Sustentável',
+    width: 2200,
+    spawn: { x: 80, y: 600 },
+
+    platforms: [
+        { x: 0, y: 660, w: 2200, h: 60 },
+        { x: 180, y: 530, w: 150, h: 20 },
+        { x: 450, y: 420, w: 150, h: 20 },
+        { x: 760, y: 540, w: 160, h: 20 },
+        { x: 1050, y: 430, w: 160, h: 20 },
+        { x: 1370, y: 530, w: 150, h: 20 },
+        { x: 1650, y: 410, w: 160, h: 20 },
+        { x: 1900, y: 530, w: 150, h: 20 }
+    ],
+
+    hazards: [
+        { type: 'water', x: 350, w: 90 },
+        { type: 'fire', x: 650, w: 100 },
+        { type: 'water', x: 1250, w: 100 },
+        { type: 'fire', x: 1800, w: 90 }
+    ],
+
+    chips: [
+        { x: 220, y: 490 },
+        { x: 510, y: 380 },
+        { x: 700, y: 620 },
+        { x: 850, y: 500 },
+        { x: 1100, y: 390 },
+        { x: 1450, y: 490 },
+        { x: 1700, y: 370 },
+        { x: 2000, y: 490 }
+    ],
+
+    door: { x: 2100, y: 620 },
+
+    signs: [
+        { x: 350, y: 640, text: 'Água à frente!\nUse o Módulo ÁGUA' },
+        { x: 650, y: 640, text: 'Lava à frente!\nUse o Módulo FOGO' },
+        { x: 1250, y: 640, text: 'Cuidado com a água!' },
+        { x: 1800, y: 640, text: 'Cuidado com a lava!' }
+    ]
 };
+
 levels[5] = {
-    ...levels[3], name: 'Fase Bônus: Mestre da Matemática', width: 2200,
-    door: { x: 2100, y: 620 }, spawn: { x: 80, y: 600 }
+    name: 'Planeta dos Desafios',
+    width: 2400,
+    spawn: { x: 80, y: 600 },
+
+    platforms: [
+        { x: 0, y: 660, w: 2400, h: 60 },
+        { x: 180, y: 530, w: 130, h: 20 },
+        { x: 430, y: 420, w: 140, h: 20 },
+        { x: 700, y: 530, w: 130, h: 20 },
+        { x: 970, y: 400, w: 150, h: 20 },
+        { x: 1260, y: 510, w: 140, h: 20 },
+        { x: 1540, y: 390, w: 150, h: 20 },
+        { x: 1830, y: 500, w: 140, h: 20 },
+        { x: 2110, y: 380, w: 150, h: 20 }
+    ],
+
+    hazards: [
+        { type: 'acid', x: 330, w: 80 },
+        { type: 'fire', x: 600, w: 90 },
+        { type: 'water', x: 890, w: 90 },
+        { type: 'acid', x: 1160, w: 80 },
+        { type: 'fire', x: 1450, w: 90 },
+        { type: 'water', x: 1740, w: 90 },
+        { type: 'acid', x: 2020, w: 80 }
+    ],
+
+    chips: [
+        { x: 220, y: 490 },
+        { x: 480, y: 380 },
+        { x: 740, y: 490 },
+        { x: 1020, y: 360 },
+        { x: 1300, y: 470 },
+        { x: 1590, y: 350 },
+        { x: 1870, y: 460 },
+        { x: 2160, y: 340 }
+    ],
+
+    door: { x: 2310, y: 620 },
+
+    signs: [
+        { x: 330, y: 640, text: 'Obstáculo espacial!\nPule por cima' },
+        { x: 600, y: 640, text: 'Lava!\nMódulo FOGO' },
+        { x: 890, y: 640, text: 'Água!\nMódulo ÁGUA' },
+        { x: 1160, y: 640, text: 'Cuidado com o ácido!' },
+        { x: 1450, y: 640, text: 'Lava!\nMódulo FOGO' },
+        { x: 1740, y: 640, text: 'Água!\nMódulo ÁGUA' }
+    ]
 };
+
 
 questionsByLevel[4] = [
     { q: 'Uma turma arrecadou 8 caixas com 24 livros cada. Quantos livros arrecadou?', options: ['182', '192', '202'], answer: '192' },
@@ -216,7 +304,9 @@ questionsByLevel[4] = [
     { q: '72 sementes foram divididas igualmente entre 9 canteiros. Quantas por canteiro?', options: ['7', '8', '9'], answer: '8' },
     { q: 'A atividade começou às 13h25 e durou 1h40. Quando terminou?', options: ['14h55', '15h05', '15h15'], answer: '15h05' },
     { q: 'Há 12 equipes com 15 alunos em cada. Quantos alunos participam?', options: ['160', '170', '180'], answer: '180' },
-    { q: 'Uma coleta tinha 360 latinhas. Foram separadas em 6 grupos iguais. Quantas por grupo?', options: ['50', '60', '70'], answer: '60' }
+    { q: 'Uma coleta tinha 360 latinhas. Foram separadas em 6 grupos iguais. Quantas por grupo?', options: ['50', '60', '70'], answer: '60' },
+    { q: 'Uma escola montou 15 kits com 12 lápis cada. Quantos lápis foram usados?', options: ['170', '180', '190'], answer: '180' },
+    { q: '540 folhas foram distribuídas igualmente entre 6 salas. Quantas folhas cada sala recebeu?', options: ['80', '90', '100'], answer: '90' }
 ];
 questionsByLevel[5] = [
     { q: 'Desafio bônus: 3 turmas recolheram 125 tampinhas cada. Quantas tampinhas no total?', options: ['275', '375', '425'], answer: '375' },
@@ -224,7 +314,9 @@ questionsByLevel[5] = [
     { q: 'Uma trilha tem 1.250 metros. A equipe percorreu 875 metros. Quantos faltam?', options: ['325 m', '375 m', '425 m'], answer: '375 m' },
     { q: 'Uma oficina durou 2h15min e começou às 9h30. Quando terminou?', options: ['11h15', '11h45', '12h15'], answer: '11h45' },
     { q: 'Cinco equipes recolheram 48 kg de papel cada. Qual foi o total?', options: ['220 kg', '240 kg', '260 kg'], answer: '240 kg' },
-    { q: 'Desafio criativo: 96 mudas serão divididas em 8 fileiras iguais. Quantas por fileira?', options: ['10', '12', '14'], answer: '12' }
+    { q: 'Desafio criativo: 96 mudas serão divididas em 8 fileiras iguais. Quantas por fileira?', options: ['10', '12', '14'], answer: '12' },
+    { q: 'Oito equipes recolheram 125 tampinhas cada. Quantas tampinhas foram recolhidas?', options: ['900', '1.000', '1.100'], answer: '1.000' },
+    { q: 'Uma escola tinha 200 mudas e plantou três quartos delas. Quantas mudas foram plantadas?', options: ['100', '150', '175'], answer: '150' }
 ];
 
 function getSavedProgress() {
@@ -233,9 +325,125 @@ function getSavedProgress() {
 }
 function saveProgress() {
     const data = getSavedProgress();
+
     data.score = Math.max(Number(data.score) || 0, score);
     data.currentLevel = currentLevel;
-    localStorage.setItem('aventuraMatematicaProgress', JSON.stringify(data));
+    data.collectedChips = collectedChips;
+
+    localStorage.setItem(
+        'aventuraMatematicaProgress',
+        JSON.stringify(data)
+    );
+}
+function exitGame(scene) {
+    if (!gameStarted || levelTransitioning) return;
+
+    // Salva o progresso atual
+    saveProgress();
+
+    // Para a narração, se estiver acontecendo
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    // Pausa o jogo
+    scene.physics.pause();
+    gameStarted = false;
+
+    // Esconde os controles de celular
+    if (scene.mobileControlsElement) {
+        scene.mobileControlsElement.style.display = 'none';
+    }
+
+    // Limpa a tela de confirmação
+    const elements = [];
+
+    const add = (obj) => {
+        obj.setScrollFactor(0).setDepth(300);
+        elements.push(obj);
+        return obj;
+    };
+
+    add(scene.add.rectangle(
+        GAME_W / 2, GAME_H / 2,
+        GAME_W, GAME_H, 0x020617, 0.85
+    ));
+
+    add(scene.add.rectangle(
+        GAME_W / 2, GAME_H / 2,
+        540, 280, 0x0f172a, 1
+    )).setStrokeStyle(4, 0x2dd4bf);
+
+    add(scene.add.text(
+        GAME_W / 2, GAME_H / 2 - 75,
+        'Deseja sair da aventura?',
+        {
+            fontFamily: FONT,
+            fontSize: '30px',
+            color: '#ffffff',
+            fontStyle: 'bold'
+        }
+    ).setOrigin(0.5));
+
+    add(scene.add.text(
+        GAME_W / 2, GAME_H / 2 - 20,
+        'Seu progresso ficará salvo!',
+        {
+            fontFamily: FONT,
+            fontSize: '22px',
+            color: '#34d399'
+        }
+    ).setOrigin(0.5));
+
+    const createButton = (x, text, color, callback) => {
+        const btn = add(scene.add.rectangle(
+            x, GAME_H / 2 + 65,
+            190, 60, color
+        )).setInteractive({ useHandCursor: true });
+
+        add(scene.add.text(
+            x, GAME_H / 2 + 65,
+            text,
+            {
+                fontFamily: FONT,
+                fontSize: '22px',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }
+        ).setOrigin(0.5));
+
+        btn.on('pointerdown', callback);
+    };
+
+    // Continuar jogando
+    createButton(
+        GAME_W / 2 - 110,
+        'CONTINUAR',
+        0x0d9488,
+        () => {
+            elements.forEach(e => e.destroy());
+            gameStarted = true;
+            scene.physics.resume();
+
+            if (scene.mobileControlsElement) {
+                scene.mobileControlsElement.style.display = 'flex';
+            }
+        }
+    );
+
+    // Confirmar saída
+    createButton(
+        GAME_W / 2 + 110,
+        'SAIR',
+        0xdc2626,
+        () => {
+            elements.forEach(e => e.destroy());
+
+            // Limpa a pergunta aberta, se houver
+            quizActive = false;
+            window.location.reload();
+        }
+    );
 }
 function markLevelComplete(level) {
     const data = getSavedProgress();
@@ -251,15 +459,16 @@ function setGameFont(active) {
 }
 function speakText(text) {
     if (!('speechSynthesis' in window)) return;
+
     window.speechSynthesis.cancel();
+
     const utterance = new SpeechSynthesisUtterance(String(text));
-    utterance.lang = 'pt-BR'; utterance.rate = 0.9;
+    utterance.lang = 'pt-BR';
+    utterance.rate = 0.9;
+
     window.speechSynthesis.speak(utterance);
 }
 
-// ==========================================================
-// PRELOAD - todos os gráficos são desenhados por código
-// ==========================================================
 function preload() {
     const g = this.make.graphics({ x: 0, y: 0, add: false });
     let seed = 7;
@@ -481,32 +690,19 @@ function create() {
     const scene = this;
 
     // ----- fundo em camadas (parallax) -----
-    this.add.image(0, 0, 'bg_sky').setOrigin(0, 0).setDisplaySize(GAME_W, GAME_H).setScrollFactor(0).setDepth(-20);
-    bgStars = this.add.tileSprite(0, 0, GAME_W, GAME_H, 'bg_stars').setOrigin(0, 0).setScrollFactor(0).setDepth(-19);
+    bgSky = this.add.image(0, 0, 'bg_sky')
+        .setOrigin(0, 0)
+        .setDisplaySize(GAME_W, GAME_H)
+        .setScrollFactor(0)
+        .setDepth(-20); bgStars = this.add.tileSprite(0, 0, GAME_W, GAME_H, 'bg_stars').setOrigin(0, 0).setScrollFactor(0).setDepth(-19);
     bgGrid = this.add.tileSprite(0, 0, GAME_W, GAME_H, 'bg_grid').setOrigin(0, 0).setScrollFactor(0).setDepth(-18);
     bgCity = this.add.tileSprite(0, GAME_H - 256, GAME_W, 256, 'bg_city').setOrigin(0, 0).setScrollFactor(0).setDepth(-17);
+    bgCity.setVisible(false);
 
     // ----- controles -----
     cursors = this.input.keyboard.createCursorKeys();
     keys = this.input.keyboard.addKeys('W,A,S,D', false);    //this.input.keyboard.addCapture('UP,DOWN,LEFT,RIGHT,SPACE');
     createMobileControls(this);
-    // Permite digitar normalmente nos campos do menu
-    const camposTexto = [
-        document.getElementById('nickname'),
-        document.getElementById('room-code')
-    ];
-
-    camposTexto.forEach((campo) => {
-        if (!campo) return;
-
-        campo.addEventListener('focus', () => {
-            this.input.keyboard.enabled = false;
-        });
-
-        campo.addEventListener('blur', () => {
-            this.input.keyboard.enabled = true;
-        });
-    });
     // ----- física -----
     platforms = this.physics.add.staticGroup();
     items = this.physics.add.group({ allowGravity: false, immovable: true });
@@ -537,19 +733,70 @@ function create() {
     this.physics.add.overlap(player, door, enterDoor, null, this);
 
     // ----- HUD -----
-    this.add.rectangle(0, 0, GAME_W, 56, 0x020617, 0.85).setOrigin(0, 0).setScrollFactor(0).setDepth(90);
-    this.add.rectangle(0, 56, GAME_W, 3, 0x2dd4bf, 0.8).setOrigin(0, 0).setScrollFactor(0).setDepth(90);
+    this.add.rectangle(0, 0, GAME_W, 56, 0x020617, 0.85)
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setDepth(90);
 
-    levelText = this.add.text(20, 14, '', { fontFamily: FONT, fontSize: '22px', color: '#34d399', fontStyle: 'bold' })
-        .setScrollFactor(0).setDepth(91);
-    scoreText = this.add.text(600, 14, 'Pontos: 0', { fontFamily: FONT, fontSize: '22px', color: '#38bdf8', fontStyle: 'bold' })
-        .setScrollFactor(0).setDepth(91);
-    chipsText = this.add.text(780, 14, 'Chips: 0/0', { fontFamily: FONT, fontSize: '22px', color: '#fbbf24', fontStyle: 'bold' })
-        .setScrollFactor(0).setDepth(91);
-    modeText = this.add.text(1260, 14, 'MÓDULO ÁGUA', { fontFamily: FONT, fontSize: '22px', color: '#7dd3fc', fontStyle: 'bold' })
-        .setOrigin(1, 0).setScrollFactor(0).setDepth(91);
-    modeDot = this.add.circle(1050, 29, 10, 0x38bdf8, 1).setScrollFactor(0).setDepth(91);
+    this.add.rectangle(0, 56, GAME_W, 3, 0x2dd4bf, 0.8)
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setDepth(90);
 
+    levelText = this.add.text(20, 14, '', {
+        fontFamily: FONT,
+        fontSize: '22px',
+        color: '#34d399',
+        fontStyle: 'bold'
+    }).setScrollFactor(0).setDepth(91);
+
+    scoreText = this.add.text(600, 14, 'Pontos: 0', {
+        fontFamily: FONT,
+        fontSize: '22px',
+        color: '#38bdf8',
+        fontStyle: 'bold'
+    }).setScrollFactor(0).setDepth(91);
+
+    chipsText = this.add.text(780, 14, 'Chips: 0/0', {
+        fontFamily: FONT,
+        fontSize: '22px',
+        color: '#fbbf24',
+        fontStyle: 'bold'
+    }).setScrollFactor(0).setDepth(91);
+
+    // Indicador do módulo
+    modeText = this.add.text(1260, 14, 'MÓDULO ÁGUA', {
+        fontFamily: FONT,
+        fontSize: '22px',
+        color: '#7dd3fc',
+        fontStyle: 'bold'
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(91);
+
+    modeDot = this.add.circle(1050, 29, 10, 0x38bdf8, 1)
+        .setScrollFactor(0)
+        .setDepth(91);
+
+    // ----- BOTÃO SAIR -----
+    const exitButton = this.add.rectangle(
+        975, 29, 100, 34, 0xdc2626
+    )
+        .setScrollFactor(0)
+        .setDepth(92)
+        .setInteractive({ useHandCursor: true });
+
+    const exitLabel = this.add.text(975, 29, '🚪 SAIR', {
+        fontFamily: FONT,
+        fontSize: '16px',
+        fontStyle: 'bold',
+        color: '#ffffff'
+    })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(93);
+
+    exitButton.on('pointerdown', () => {
+        exitGame(scene);
+    });
     // ----- câmera -----
     this.cameras.main.startFollow(player, true, 0.12, 0.12);
 
@@ -706,49 +953,49 @@ function update() {
         return;
     }
     // ----- trocar módulo (seta para baixo / S / botão de toque) -----
-const trocarModulo =
-    Phaser.Input.Keyboard.JustDown(cursors.down) ||
-    Phaser.Input.Keyboard.JustDown(keys.S) ||
-    touchControls.switchPressed;
+    const trocarModulo =
+        Phaser.Input.Keyboard.JustDown(cursors.down) ||
+        Phaser.Input.Keyboard.JustDown(keys.S) ||
+        touchControls.switchPressed;
 
-if (trocarModulo) {
-    setMode(this, playerMode === 'water' ? 'fire' : 'water', false);
-    touchControls.switchPressed = false;
-}
+    if (trocarModulo) {
+        setMode(this, playerMode === 'water' ? 'fire' : 'water', false);
+        touchControls.switchPressed = false;
+    }
 
-// ----- movimento -----
-const left =
-    cursors.left.isDown ||
-    keys.A.isDown ||
-    touchControls.left;
+    // ----- movimento -----
+    const left =
+        cursors.left.isDown ||
+        keys.A.isDown ||
+        touchControls.left;
 
-const right =
-    cursors.right.isDown ||
-    keys.D.isDown ||
-    touchControls.right;
+    const right =
+        cursors.right.isDown ||
+        keys.D.isDown ||
+        touchControls.right;
 
-const jump =
-    cursors.up.isDown ||
-    keys.W.isDown ||
-    touchControls.jump;
+    const jump =
+        cursors.up.isDown ||
+        keys.W.isDown ||
+        touchControls.jump;
 
-if (left) {
-    player.setVelocityX(-PLAYER_SPEED);
-    player.setFlipX(true);
-} else if (right) {
-    player.setVelocityX(PLAYER_SPEED);
-    player.setFlipX(false);
-} else {
-    player.setVelocityX(0);
-}
+    if (left) {
+        player.setVelocityX(-PLAYER_SPEED);
+        player.setFlipX(true);
+    } else if (right) {
+        player.setVelocityX(PLAYER_SPEED);
+        player.setFlipX(false);
+    } else {
+        player.setVelocityX(0);
+    }
 
-if (jump && player.body.touching.down) {
-    player.setVelocityY(JUMP_FORCE);
-    burst(this, player.x, player.y + 28, 0x94a3b8, 6);
-}
+    if (jump && player.body.touching.down) {
+        player.setVelocityY(JUMP_FORCE);
+        burst(this, player.x, player.y + 28, 0x94a3b8, 6);
+    }
 
-checkHazards(this);
-checkLever(this);
+    checkHazards(this);
+    checkLever(this);
 }
 // ==========================================================
 // MÓDULO ÁGUA / FOGO
@@ -771,8 +1018,8 @@ function checkHazards(scene) {
     const b = player.body;
     for (let i = 0; i < hazards.length; i++) {
         const h = hazards[i];
-        const touching = b.right > h.x + 4 && b.left < h.x + h.w - 4 &&
-            b.bottom > h.y + 2 && b.top < h.y + h.h;
+        const touching = b.right > h.x + 10 && b.left < h.x + h.w - 10 &&
+            b.bottom > h.y + 5 && b.top < h.y + h.h;
         if (!touching) continue;
 
         const safe = (h.type === 'fire' && playerMode === 'fire') ||
@@ -792,14 +1039,14 @@ function killPlayer(scene, h) {
     aura.setVisible(false);
 
     const msgs = {
-        fire: 'Superaquecimento! A lava só é segura no Módulo FOGO.\nPressione ↓ para trocar de módulo.',
-        water: 'Curto-circuito! A água só é segura no Módulo ÁGUA.\nPressione ↓ para trocar de módulo.',
-        acid: 'Ácido! O líquido verde é perigoso para os dois módulos.\nPule por cima dele!'
+        fire: 'Ops! Vamos tentar de novo. Troque para o Módulo FOGO antes de passar pela lava.',
+        water: 'Quase lá! Troque para o Módulo ÁGUA antes de atravessar a água.',
+        acid: 'Tudo bem! Pule sobre o obstáculo e tente novamente.'
     };
-    showMessage(scene, msgs[h.type], '#f87171', 3200);
+    showMessage(scene, msgs[h.type], '#fbbf24', 2400);
 
-    scene.time.delayedCall(800, () => {
-        player.setPosition(Math.max(50, h.x - 55), 590);
+    scene.time.delayedCall(650, () => {
+        player.setPosition(Math.max(spawnPoint.x, h.x - 100), 590);
         player.setVelocity(0, 0);
         player.setVisible(true);
         aura.setVisible(true);
@@ -837,9 +1084,175 @@ function activateLever(scene) {
     }
 }
 
-// ==========================================================
+
+function buildLevelScenery(scene, level) {
+    const g = scene.add.graphics();
+    g.setDepth(-16);
+    g.setScrollFactor(0.35);
+
+    sceneryObjects.push(g);
+
+    // Cores diferentes para cada fase
+    const themes = {
+        1: { sky: 0xffffff, grid: 0x5eead4 }, // Escola
+        2: { sky: 0xc7e9ff, grid: 0x38bdf8 }, // Laboratório
+        3: { sky: 0xffdfb5, grid: 0xf97316 }, // Usina
+        4: { sky: 0xc7f9cc, grid: 0x22c55e }, // Cidade sustentável
+        5: { sky: 0xd8c8ff, grid: 0xa78bfa }  // Espaço
+    };
+
+    bgSky.setTint(themes[level].sky);
+    bgGrid.setTint(themes[level].grid);
+
+    if (level === 1) {
+        // PÁTIO DA ESCOLA
+        g.fillStyle(0xfacc15, 0.9);
+        g.fillCircle(1800, 130, 65);
+
+        // Prédios da escola
+        [150, 650, 1250, 1800].forEach((x, i) => {
+            g.fillStyle(0x2563eb, 0.85);
+            g.fillRect(x, 310, 220, 350);
+
+            g.fillStyle(0xfef3c7, 1);
+            for (let wx = x + 25; wx < x + 200; wx += 55) {
+                for (let wy = 350; wy < 590; wy += 65) {
+                    g.fillRect(wx, wy, 25, 30);
+                }
+            }
+        });
+
+        // Árvores
+        [450, 1000, 1550].forEach(x => {
+            g.fillStyle(0x854d0e, 1);
+            g.fillRect(x, 470, 25, 190);
+            g.fillStyle(0x16a34a, 1);
+            g.fillCircle(x + 12, 440, 65);
+        });
+
+    } else if (level === 2) {
+        // LABORATÓRIO ECOLÓGICO
+        [150, 650, 1200, 1750].forEach((x, i) => {
+            g.fillStyle(0x334155, 0.95);
+            g.fillRoundedRect(x, 250, 250, 410, 18);
+
+            g.fillStyle(i % 2 ? 0x38bdf8 : 0x2dd4bf, 0.5);
+            g.fillRoundedRect(x + 25, 290, 200, 140, 12);
+
+            g.fillStyle(0x94a3b8, 1);
+            g.fillRect(x + 35, 470, 180, 12);
+
+            g.fillStyle(0x0ea5e9, 0.7);
+            g.fillCircle(x + 125, 350, 35);
+        });
+
+        // Tubulações
+        g.lineStyle(16, 0x64748b, 1);
+        g.lineBetween(0, 220, 2200, 220);
+        g.lineBetween(500, 220, 500, 480);
+        g.lineBetween(1500, 220, 1500, 480);
+
+    } else if (level === 3) {
+        // USINA DE RECICLAGEM
+        [150, 750, 1400, 1900].forEach(x => {
+            g.fillStyle(0x475569, 1);
+            g.fillRect(x, 300, 260, 360);
+
+            g.fillStyle(0xf97316, 1);
+            g.fillRect(x + 30, 340, 200, 18);
+
+            g.fillStyle(0x94a3b8, 1);
+            g.fillRect(x + 45, 390, 170, 110);
+
+            g.fillStyle(0x1e293b, 1);
+            g.fillRect(x + 65, 415, 130, 60);
+        });
+
+        // Chaminés
+        [350, 1000, 1650].forEach(x => {
+            g.fillStyle(0x64748b, 1);
+            g.fillRect(x, 100, 65, 250);
+
+            g.fillStyle(0x94a3b8, 1);
+            g.fillCircle(x + 32, 90, 40);
+        });
+
+        // Esteira
+        g.fillStyle(0x1e293b, 1);
+        g.fillRect(0, 580, 2200, 25);
+
+    } else if (level === 4) {
+        // CIDADE SUSTENTÁVEL
+        [100, 550, 1050, 1600].forEach((x, i) => {
+            const h = [280, 380, 320, 420][i];
+
+            g.fillStyle(0x0f766e, 0.9);
+            g.fillRect(x, 660 - h, 230, h);
+
+            g.fillStyle(0xa7f3d0, 1);
+            for (let wx = x + 25; wx < x + 210; wx += 45) {
+                for (let wy = 660 - h + 30; wy < 630; wy += 55) {
+                    g.fillRect(wx, wy, 20, 25);
+                }
+            }
+
+            // Painéis solares
+            g.fillStyle(0x1d4ed8, 1);
+            g.fillRect(x + 25, 660 - h - 35, 180, 25);
+        });
+
+        // Árvores
+        [400, 900, 1450, 2050].forEach(x => {
+            g.fillStyle(0x854d0e, 1);
+            g.fillRect(x, 530, 20, 130);
+
+            g.fillStyle(0x22c55e, 1);
+            g.fillCircle(x + 10, 500, 55);
+        });
+
+        // Turbinas eólicas
+        [800, 1300, 1950].forEach(x => {
+            g.lineStyle(8, 0xe2e8f0, 1);
+            g.lineBetween(x, 150, x, 520);
+
+            g.lineStyle(7, 0xffffff, 1);
+            g.lineBetween(x, 150, x - 65, 80);
+            g.lineBetween(x, 150, x + 65, 80);
+            g.lineBetween(x, 150, x, 235);
+        });
+
+    } else if (level === 5) {
+        // PLANETA DOS DESAFIOS
+        g.fillStyle(0x7c3aed, 0.8);
+        g.fillCircle(1750, 240, 150);
+
+        g.lineStyle(20, 0xc4b5fd, 0.9);
+        g.strokeEllipse(1750, 240, 390, 100);
+
+        // Planetas menores
+        g.fillStyle(0xf472b6, 0.9);
+        g.fillCircle(350, 250, 75);
+
+        g.fillStyle(0x38bdf8, 0.9);
+        g.fillCircle(1050, 180, 100);
+
+        g.fillStyle(0xfbbf24, 1);
+        [150, 650, 900, 1350, 2050].forEach((x, i) => {
+            g.fillStar(x, 120 + (i % 2) * 100, 5, 12, 28);
+        });
+
+        // Ilhas espaciais
+        [250, 800, 1350, 1850].forEach(x => {
+            g.fillStyle(0x6d28d9, 0.9);
+            g.fillEllipse(x, 570, 190, 55);
+
+            g.fillStyle(0xa78bfa, 1);
+            g.fillEllipse(x, 550, 190, 30);
+        });
+    }
+}
+
 // CARREGAR FASE
-// ==========================================================
 function loadLevel(level) {
     const scene = this;
     const data = levels[level];
@@ -865,12 +1278,17 @@ function loadLevel(level) {
     collectedChips = 0;
     totalChips = data.chips.length;
 
+    // Remove o cenário anterior
+    sceneryObjects.forEach(o => o.destroy());
+    sceneryObjects = [];
+
     prepareQuestions(level);
 
     // ----- mundo e câmera -----
     scene.physics.world.setBounds(0, 0, data.width, GAME_H);
     scene.cameras.main.setBounds(0, 0, data.width, GAME_H);
     scene.cameras.main.scrollX = 0;
+    buildLevelScenery(scene, level);
 
     // ----- plataformas (inclui túneis gerados pelas poças) -----
     const plats = data.platforms.slice();
@@ -997,10 +1415,8 @@ function spawnBubble(scene, h) {
 // CHIPS, PORTA E TRANSIÇÕES
 // ==========================================================
 function prepareQuestions(level) {
-    let custom = [];
-    try { custom = JSON.parse(localStorage.getItem('aventuraTeacherQuestions') || '{}')[level] || []; } catch (_) { }
-    const bank = custom.length ? custom : questionsByLevel[level];
-    questionDeck = Phaser.Utils.Array.Shuffle([...bank]);
+    // Cada fase possui oito perguntas; a ordem muda a cada partida.
+    questionDeck = Phaser.Utils.Array.Shuffle([...questionsByLevel[level]]);
 }
 
 function collectItem(playerObj, item) {
@@ -1047,16 +1463,170 @@ function enterDoor() {
             levelTransitioning = false;
         });
     } else {
-        showMessage(scene, `Parabéns! Você concluiu as 4 fases e a fase bônus!\nPontuação: ${score}`, '#fbbf24', 5000);
-        scene.time.delayedCall(4600, () => cam.fadeOut(500, 11, 18, 32));
-        scene.time.delayedCall(5200, () => {
-            currentLevel = 1; score = 0;
-            loadLevel.call(scene, currentLevel);
-            cam.fadeIn(500, 11, 18, 32);
-            announceLevel(scene);
-            levelTransitioning = false;
+        saveProgress();
+
+        scene.time.delayedCall(800, () => {
+            showEndScreen(scene);
         });
     }
+}
+
+function showEndScreen(scene) {
+    levelTransitioning = true;
+
+    // Fundo da tela final
+    const overlayItems = [];
+
+    const fundo = scene.add.rectangle(
+        640, 360, 1280, 720, 0x06152e, 0.97
+    )
+        .setScrollFactor(0)
+        .setDepth(1000)
+        .setInteractive();
+
+    overlayItems.push(fundo);
+
+    // Título
+    overlayItems.push(
+        scene.add.text(640, 65, 'MISSÃO CONCLUÍDA!', {
+            fontFamily: FONT,
+            fontSize: '48px',
+            fontStyle: 'bold',
+            color: '#fbbf24',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    overlayItems.push(
+        scene.add.text(640, 125, 'Parabéns, explorador! Você completou todas as fases!', {
+            fontFamily: FONT,
+            fontSize: '22px',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Pontuação final
+    overlayItems.push(
+        scene.add.text(640, 195, `PONTUAÇÃO FINAL: ${score}`, {
+            fontFamily: FONT,
+            fontSize: '30px',
+            fontStyle: 'bold',
+            color: '#38bdf8',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Créditos
+    overlayItems.push(
+        scene.add.text(640, 270, 'CRÉDITOS', {
+            fontFamily: FONT,
+            fontSize: '28px',
+            fontStyle: 'bold',
+            color: '#fbbf24',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Alunos - coluna esquerda
+    overlayItems.push(
+        scene.add.text(420, 340,
+            'Luana Andrade\nFernanda Ribeiro Rios\nGabrielle Santos Silva\nIzabela Silva Santos',
+            {
+                fontFamily: FONT,
+                fontSize: '19px',
+                color: '#ffffff',
+                align: 'center',
+                lineSpacing: 12
+            }
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Alunos - coluna direita
+    overlayItems.push(
+        scene.add.text(860, 340,
+            'Wellington Carmo\nLucas de Paula Claudino\nGabriel Torquato Silva',
+            {
+                fontFamily: FONT,
+                fontSize: '19px',
+                color: '#ffffff',
+                align: 'center',
+                lineSpacing: 12
+            }
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Disciplina e professor
+    overlayItems.push(
+        scene.add.text(640, 485, 'Itinerário Extensionista 2', {
+            fontFamily: FONT,
+            fontSize: '20px',
+            fontStyle: 'bold',
+            color: '#7dd3fc',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    overlayItems.push(
+        scene.add.text(640, 520, 'Professor: João Roberto Ursino', {
+            fontFamily: FONT,
+            fontSize: '19px',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    overlayItems.push(
+        scene.add.text(640, 555, 'Grupo Wall Tech • 2026', {
+            fontFamily: FONT,
+            fontSize: '17px',
+            color: '#94a3b8',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+    );
+
+    // Botão jogar novamente
+    const botaoVisual = scene.add.graphics()
+        .fillStyle(0xf97316, 1)
+        .fillRoundedRect(520, 615, 240, 55, 14)
+        .setScrollFactor(0)
+        .setDepth(1002);
+
+    overlayItems.push(botaoVisual);
+
+    const botaoClique = scene.add.rectangle(
+        640, 642, 240, 55, 0xffffff, 0
+    )
+        .setScrollFactor(0)
+        .setDepth(1003)
+        .setInteractive({ useHandCursor: true });
+
+    overlayItems.push(botaoClique);
+
+    overlayItems.push(
+        scene.add.text(640, 642, 'JOGAR NOVAMENTE', {
+            fontFamily: FONT,
+            fontSize: '20px',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(1004)
+    );
+
+    // Reiniciar o jogo ao clicar
+    botaoClique.on('pointerdown', () => {
+        overlayItems.forEach(item => item.destroy());
+
+        currentLevel = 1;
+        score = 0;
+        collectedChips = 0;
+        doorOpen = false;
+        quizActive = false;
+        gameStarted = true;
+        levelTransitioning = false;
+
+        loadLevel.call(scene, currentLevel);
+        announceLevel(scene);
+    });
 }
 
 function announceLevel(scene) {
@@ -1144,6 +1714,46 @@ function showQuizModal(questionData) {
         }).setOrigin(0.5)).setDepth(152);
     }
 
+    // Botão para ouvir novamente a pergunta
+    const audioButton = add(
+        scene.add.rectangle(cx, cy + 28, 270, 42, 0x1d4ed8)
+    )
+        .setStrokeStyle(2, 0x93c5fd)
+        .setDepth(152)
+        .setInteractive({ useHandCursor: true });
+
+    add(scene.add.text(cx, cy + 28, '🔊 Ouvir pergunta', {
+        fontFamily: FONT,
+        fontSize: '18px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+    }).setOrigin(0.5)).setDepth(153);
+
+    // Monta o texto que será narrado
+    const quizSpeech = `Vamos ouvir o desafio. ${questionData.q} ` +
+        options.map((option, index) =>
+            `Opção ${index + 1}: ${option}.`
+        ).join(' ');
+
+    // Função para reproduzir a narração
+    const readQuestion = () => {
+        speakText(quizSpeech);
+    };
+
+    // Efeito visual do botão
+    audioButton.on('pointerover', () =>
+        audioButton.setFillStyle(0x2563eb)
+    );
+
+    audioButton.on('pointerout', () =>
+        audioButton.setFillStyle(0x1d4ed8)
+    );
+
+    // Ao clicar, repete a pergunta
+    audioButton.on('pointerdown', readQuestion);
+
+    // Narração automática ao abrir a pergunta
+    readQuestion();
     add(scene.add.text(cx, cy + 185, 'Clique na opção ou pressione as teclas 1, 2 ou 3', {
         fontFamily: FONT, fontSize: '16px', color: '#94a3b8'
     }).setOrigin(0.5)).setDepth(152);

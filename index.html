@@ -13,42 +13,43 @@
 <body>
   <div id="game-container" aria-label="Área do jogo Aventura Matemática"></div>
 
-  <section id="student-menu" aria-label="Menu inicial do aluno">
+  <section id="student-menu" aria-label="Menu inicial do jogo">
     <div class="menu-card">
-      <h1>🚀 Aventura Matemática</h1>
-      <p>Ajude Byte a resolver desafios, aprender com cada tentativa e avançar pelas fases!</p>
+      <h1>O MUNDO DO BYTE</h1>
+      <p class="menu-subtitle">A missão espacial de Byte começa com você!</p>
+
+      <section class="player-setup" aria-label="Personalize seu jogador">
+        <div id="selected-avatar-display" class="selected-avatar-display" aria-hidden="true">🚀</div>
+        <h2>Escolha seu avatar</h2>
+        <p class="setup-hint">Toque no desenho que vai representar você!</p>
+        <div id="avatar-options" class="avatar-grid" role="group" aria-label="Avatares disponíveis">
+          <button type="button" class="avatar-option selected" data-avatar="🚀" aria-pressed="true" aria-label="Foguete"><span class="avatar-picture">🚀</span><span>Foguete</span></button>
+          <button type="button" class="avatar-option" data-avatar="👩‍🚀" aria-pressed="false" aria-label="Astronauta"><span class="avatar-picture">👩‍🚀</span><span>Astronauta</span></button>
+          <button type="button" class="avatar-option" data-avatar="🪐" aria-pressed="false" aria-label="Planeta"><span class="avatar-picture">🪐</span><span>Planeta</span></button>
+          <button type="button" class="avatar-option" data-avatar="🌙" aria-pressed="false" aria-label="Lua"><span class="avatar-picture">🌙</span><span>Lua</span></button>
+          <button type="button" class="avatar-option" data-avatar="⭐" aria-pressed="false" aria-label="Estrela"><span class="avatar-picture">⭐</span><span>Estrela</span></button>
+          <button type="button" class="avatar-option" data-avatar="☄️" aria-pressed="false" aria-label="Cometa"><span class="avatar-picture">☄️</span><span>Cometa</span></button>
+          <button type="button" class="avatar-option" data-avatar="👽" aria-pressed="false" aria-label="Alienígena"><span class="avatar-picture">👽</span><span>Alien</span></button>
+          <button type="button" class="avatar-option" data-avatar="🛰️" aria-pressed="false" aria-label="Satélite"><span class="avatar-picture">🛰️</span><span>Satélite</span></button>
+        </div>
+
+        <h2>Escolha seu nome espacial</h2>
+        <p class="setup-hint">Qual será seu nome nesta aventura?</p>
+        <div id="nickname-options" class="nickname-grid" role="group" aria-label="Nomes disponíveis">
+          <button type="button" class="nickname-option selected" data-nickname="Estrelinha" aria-pressed="true">⭐ Estrelinha</button>
+          <button type="button" class="nickname-option" data-nickname="Foguetinho" aria-pressed="false">🚀 Foguetinho</button>
+          <button type="button" class="nickname-option" data-nickname="Luninha" aria-pressed="false">🌙 Luninha</button>
+          <button type="button" class="nickname-option" data-nickname="Cometinha" aria-pressed="false">☄️ Cometinha</button>
+          <button type="button" class="nickname-option" data-nickname="Saturno" aria-pressed="false">🪐 Saturno</button>
+          <button type="button" class="nickname-option" data-nickname="Galáxia" aria-pressed="false">🌌 Galáxia</button>
+          <button type="button" class="nickname-option" data-nickname="Astronauta" aria-pressed="false">👩‍🚀 Astronauta</button>
+          <button type="button" class="nickname-option" data-nickname="Órbita" aria-pressed="false">🛰️ Órbita</button>
+        </div>
+        <p id="player-preview" class="player-preview" aria-live="polite">🚀 Você será: Estrelinha</p>
+      </section>
 
       <div class="menu-row">
-        <label for="nickname">Nome completo:</label>
-        <input
-          type="text"
-          id="nickname"
-          maxlength="60"
-          placeholder="Digite seu nome e sobrenome"
-          autocomplete="name"
-        >
-
-        <label for="avatar">Escolha seu avatar</label>
-        <select id="avatar">
-          <option value="🤖 Byte">🤖 Byte</option>
-          <option value="🚀 Explorador">🚀 Explorador</option>
-          <option value="⭐ Estrela">⭐ Estrela</option>
-          <option value="🐱 Gatinho">🐱 Gatinho</option>
-          <option value="🦊 Raposa">🦊 Raposa</option>
-        </select>
-
-        <label for="room-code">Código da turma (opcional):</label>
-        <input
-          id="room-code"
-          maxlength="16"
-          placeholder="Ex.: TURMA4A"
-          autocomplete="off"
-        >
-      </div>
-
-      <div class="menu-row">
-        <button id="start-button">▶ Entrar na turma</button>
-        <button id="play-free-button" class="secondary">🎮 Jogar sem código</button>
+        <button id="start-button">▶ Jogar</button>
       </div>
 
       <div class="menu-row">
@@ -102,34 +103,8 @@
 
   <script src="aventura_matematica.js"></script>
 
-  <script type="module">
-    import { supabase } from './supabase-client.js';
-
-    window.supabase = supabase;
-
-    const profileKey = 'aventuraMatematicaProfile';
-    const savedProfile = JSON.parse(
-      localStorage.getItem(profileKey) || '{}'
-    );
-
-    const nickname = document.getElementById('nickname');
-    const avatar = document.getElementById('avatar');
-    const roomCode = document.getElementById('room-code');
+  <script>
     const status = document.getElementById('status');
-
-    // Evita que o Phaser capture as teclas digitadas nos campos
-    [nickname, roomCode].forEach((campo) => {
-      ['keydown', 'keyup', 'keypress'].forEach((eventName) => {
-        campo.addEventListener(eventName, (event) => {
-          event.stopPropagation();
-        });
-      });
-    });
-
-    nickname.value = '';
-    avatar.value = savedProfile.avatar || '🤖 Byte';
-    roomCode.value = savedProfile.roomCode || '';
-
     const progress = JSON.parse(
       localStorage.getItem('aventuraMatematicaProgress') ||
       '{"completedLevels":[],"score":0,"achievements":[]}'
@@ -144,14 +119,10 @@
 
     function setAccessibilityPanel(open) {
       accessibilityPanel.hidden = !open;
-
       accessibilityToggle.setAttribute('aria-expanded', String(open));
-
       accessibilityToggle.setAttribute(
         'aria-label',
-        open
-          ? 'Fechar opções de acessibilidade'
-          : 'Abrir opções de acessibilidade'
+        open ? 'Fechar opções de acessibilidade' : 'Abrir opções de acessibilidade'
       );
 
       if (open) {
@@ -176,17 +147,14 @@
       }
     });
 
-    document.getElementById('instructions-button').addEventListener(
-      'click',
-      () => {
-        instructions.style.display =
-          instructions.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('instructions-button').addEventListener('click', () => {
+      instructions.style.display =
+        instructions.style.display === 'block' ? 'none' : 'block';
 
-        if (instructions.style.display === 'block') {
-          speakText(instructions.innerText);
-        }
+      if (instructions.style.display === 'block') {
+        speakText(instructions.innerText);
       }
-    );
+    });
 
     document.getElementById('read-button').addEventListener('click', () => {
       speakText(
@@ -195,159 +163,87 @@
       );
     });
 
-    document.getElementById('contrast-button').addEventListener('click', (e) => {
+    document.getElementById('contrast-button').addEventListener('click', (event) => {
       const active = document.body.classList.toggle('high-contrast');
-
-      e.currentTarget.setAttribute('aria-pressed', String(active));
+      event.currentTarget.setAttribute('aria-pressed', String(active));
 
       const canvas = document.querySelector('#game-container canvas');
-
       if (canvas) {
-        canvas.style.filter = active
-          ? 'contrast(1.5) saturate(1.2)'
-          : '';
+        canvas.style.filter = active ? 'contrast(1.5) saturate(1.2)' : '';
       }
     });
 
-    document.getElementById('dyslexia-button').addEventListener('click', (e) => {
+    document.getElementById('dyslexia-button').addEventListener('click', (event) => {
       const active = document.body.classList.toggle('dyslexia-font');
-
-      e.currentTarget.setAttribute('aria-pressed', String(active));
+      event.currentTarget.setAttribute('aria-pressed', String(active));
 
       if (typeof setGameFont === 'function') {
         setGameFont(active);
       }
     });
 
-    // Validação do nome completo
-    function validarNome() {
-      const fullName = nickname.value.trim();
+    let selectedAvatar = '🚀';
+    let selectedNickname = 'Estrelinha';
 
-      if (!fullName) {
-        status.textContent = 'Informe seu nome para começar.';
-        nickname.focus();
-        return null;
-      }
+    const playerPreview = document.getElementById('player-preview');
+    document.getElementById('selected-avatar-display').textContent = selectedAvatar;
 
-      const nameParts = fullName.split(/\s+/);
-
-      if (nameParts.length < 2) {
-        status.textContent = 'Informe seu primeiro nome e sobrenome.';
-        nickname.focus();
-        return null;
-      }
-
-      return nameParts[0] + ' ' +
-        nameParts[1].charAt(0).toUpperCase() + '.';
+    function updatePlayerPreview() {
+      playerPreview.textContent = `Você será: ${selectedNickname}`;
+      document.getElementById('selected-avatar-display').textContent = selectedAvatar;
     }
 
-    // ENTRAR NA TURMA
-    document.getElementById('start-button').addEventListener(
-      'click',
-      async () => {
-        const displayName = validarNome();
-        const room = roomCode.value.trim();
+    document.querySelectorAll('.avatar-option').forEach((button) => {
+      button.addEventListener('click', () => {
+        selectedAvatar = button.dataset.avatar;
+        document.querySelectorAll('.avatar-option').forEach((option) => {
+          const active = option === button;
+          option.classList.toggle('selected', active);
+          option.setAttribute('aria-pressed', String(active));
+        });
+        updatePlayerPreview();
+      });
+    });
 
-        if (!displayName) return;
+    document.querySelectorAll('.nickname-option').forEach((button) => {
+      button.addEventListener('click', () => {
+        selectedNickname = button.dataset.nickname;
+        document.querySelectorAll('.nickname-option').forEach((option) => {
+          const active = option === button;
+          option.classList.toggle('selected', active);
+          option.setAttribute('aria-pressed', String(active));
+        });
+        updatePlayerPreview();
+      });
+    });
 
-        if (!room) {
-          status.textContent =
-            'Informe o código da turma ou escolha Jogar sem código.';
-          roomCode.focus();
-          return;
-        }
+    // Guarda apenas o apelido escolhido e o avatar neste dispositivo; não envia dados para a internet.
+    const previousPlayer = JSON.parse(localStorage.getItem('aventuraMatematicaPlayer') || 'null');
+    if (previousPlayer) {
+      selectedAvatar = previousPlayer.avatar || selectedAvatar;
+      selectedNickname = previousPlayer.nickname || selectedNickname;
+      document.querySelectorAll('.avatar-option').forEach((option) => {
+        const active = option.dataset.avatar === selectedAvatar;
+        option.classList.toggle('selected', active);
+        option.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.nickname-option').forEach((option) => {
+        const active = option.dataset.nickname === selectedNickname;
+        option.classList.toggle('selected', active);
+        option.setAttribute('aria-pressed', String(active));
+      });
+      updatePlayerPreview();
+    }
 
-        try {
-          const { data, error } = await window.supabase.rpc(
-            'submit_student_nickname',
-            {
-              p_room_code: room,
-              p_nickname: displayName
-            }
-          );
-
-          if (error) throw error;
-
-          if (data === 'invalid') {
-            status.textContent =
-              'Código da turma inválido ou nome já cadastrado. Confira com sua professora.';
-            return;
-          }
-
-          if (data === 'submitted') {
-            status.textContent =
-              'Nome enviado! Aguarde a aprovação da professora para entrar na turma.';
-            return;
-          }
-
-          if (data === 'approved') {
-            const { data: studentId, error: studentError } =
-              await window.supabase.rpc('get_approved_student_id', {
-                p_room_code: room,
-                p_nickname: displayName
-              });
-
-            if (studentError) throw studentError;
-
-            if (!studentId) {
-              status.textContent =
-                'Não foi possível identificar seu cadastro. Confira com sua professora.';
-              return;
-            }
-
-            localStorage.setItem(profileKey, JSON.stringify({
-              nickname: displayName,
-              avatar: avatar.value,
-              roomCode: room,
-              studentId: studentId,
-              playMode: 'class'
-            }));
-
-            iniciarPartida();
-            return;
-          }
-
-          status.textContent =
-            'Não foi possível identificar seu cadastro. Tente novamente.';
-
-        } catch (error) {
-          console.error(error);
-
-          status.textContent =
-            'Não foi possível verificar seus dados. Tente novamente.';
-        }
-      }
-    );
-
-    // JOGAR SEM CÓDIGO
-    document.getElementById('play-free-button').addEventListener(
-      'click',
-      () => {
-        const displayName = validarNome();
-
-        if (!displayName) return;
-
-        localStorage.setItem(profileKey, JSON.stringify({
-          nickname: displayName,
-          avatar: avatar.value,
-          roomCode: '',
-          studentId: null,
-          playMode: 'free'
-        }));
-
-        iniciarPartida();
-      }
-    );
-
-    // INICIAR PARTIDA
-    function iniciarPartida() {
+    document.getElementById('start-button').addEventListener('click', () => {
+      localStorage.setItem('aventuraMatematicaPlayer', JSON.stringify({
+        avatar: selectedAvatar,
+        nickname: selectedNickname
+      }));
       document.getElementById('student-menu').style.display = 'none';
       status.textContent = '';
-
-      alert(
-        'Tudo certo! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.'
-      );
-    }
+      alert(`Olá, ${selectedNickname}! Clique na tela do jogo ou pressione ESPAÇO para começar a aventura.`);
+    });
   </script>
 </body>
 
