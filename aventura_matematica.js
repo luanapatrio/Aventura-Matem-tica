@@ -11,12 +11,13 @@ const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
     backgroundColor: '#0b1220',
+
     scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: GAME_W,
-        height: GAME_H
-    },
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: GAME_W,
+    height: GAME_H
+},
     physics: {
         default: 'arcade',
         arcade: {
