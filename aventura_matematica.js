@@ -1663,7 +1663,7 @@ function showEndScreen(scene) {
     overlayItems.push(botaoClique);
 
     overlayItems.push(
-        scene.add.text(640, 642, 'JOGAR NOVAMENTE', {
+        scene.add.text(640, 642, 'TENTE NOVAMENTE', {
             fontFamily: FONT,
             fontSize: '20px',
             fontStyle: 'bold',
