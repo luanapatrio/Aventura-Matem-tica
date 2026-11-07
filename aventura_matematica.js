@@ -1892,19 +1892,12 @@ pauseButton.setInteractive({ useHandCursor: true });
 pauseButton.on('pointerdown', () => {
     const speech = window.speechSynthesis;
 
-    if (!currentUtterance) return;
-
-    if (!voiceIsPaused) {
+    if (speech.speaking && !speech.paused) {
         speech.pause();
-        voiceIsPaused = true;
-
-        pauseButton.setText("▶ Continuar voz");
-
-    } else {
+        pauseButton.setText('▶ Continuar voz');
+    } else if (speech.paused) {
         speech.resume();
-        voiceIsPaused = false;
-
-        pauseButton.setText("⏸ Pausar voz");
+        pauseButton.setText('⏸ Pausar voz');
     }
 });
 
