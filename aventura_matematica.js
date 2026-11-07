@@ -835,10 +835,10 @@ function createMobileControls(scene) {
 
         <div class="mobile-control-group mobile-actions">
             <button type="button" class="mobile-btn mobile-jump"
-                data-control="jump" aria-label="Pular">⬆</button>
+                data-control="jump" aria-label="Pular">⬇️</button>
 
             <button type="button" class="mobile-btn mobile-switch"
-                data-control="switch" aria-label="Trocar módulo">🔄</button>
+                data-control="switch" aria-label="Trocar módulo"></button>
         </div>
     `;
 
