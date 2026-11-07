@@ -7,6 +7,7 @@ const PLAYER_SPEED = 210;
 const JUMP_FORCE = -680;
 let FONT = 'Trebuchet MS, Verdana, Arial, sans-serif';
 let pauseButton = null;
+let voiceIsPaused = false;
 
 const config = {
     type: Phaser.AUTO,
@@ -469,23 +470,38 @@ function speakText(text) {
 
     window.speechSynthesis.cancel();
 
+    voiceIsPaused = false;
+
     currentUtterance = new SpeechSynthesisUtterance(String(text));
     currentUtterance.lang = "pt-BR";
     currentUtterance.rate = 0.9;
 
+    currentUtterance.onstart = () => {
+        if (pauseButton) {
+            pauseButton.setText("⏸ Pausar voz");
+        }
+    };
+
     currentUtterance.onend = () => {
         currentUtterance = null;
-        updatePauseButton();
+        voiceIsPaused = false;
+
+        if (pauseButton) {
+            pauseButton.setText("⏸ Pausar voz");
+        }
     };
 
     currentUtterance.onerror = () => {
         currentUtterance = null;
-        updatePauseButton();
+        voiceIsPaused = false;
+
+        if (pauseButton) {
+            pauseButton.setText("⏸ Pausar voz");
+        }
     };
 
     window.speechSynthesis.speak(currentUtterance);
 }
-
 function updatePauseButton() {
     if (!pauseButton) return;
 
@@ -1876,12 +1892,19 @@ pauseButton.setInteractive({ useHandCursor: true });
 pauseButton.on('pointerdown', () => {
     const speech = window.speechSynthesis;
 
-    if (speech.speaking && !speech.paused) {
+    if (!currentUtterance) return;
+
+    if (!voiceIsPaused) {
         speech.pause();
-        pauseButton.setText('▶ Continuar voz');
-    } else if (speech.paused) {
+        voiceIsPaused = true;
+
+        pauseButton.setText("▶ Continuar voz");
+
+    } else {
         speech.resume();
-        pauseButton.setText('⏸ Pausar voz');
+        voiceIsPaused = false;
+
+        pauseButton.setText("⏸ Pausar voz");
     }
 });
 
