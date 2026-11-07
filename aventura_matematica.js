@@ -1892,15 +1892,21 @@ pauseButton.setInteractive({ useHandCursor: true });
 pauseButton.on('pointerdown', () => {
     const speech = window.speechSynthesis;
 
-    if (speech.speaking && !speech.paused) {
+    if (!currentUtterance) return;
+
+    if (!voiceIsPaused) {
         speech.pause();
-        pauseButton.setText('▶ Continuar voz');
-    } else if (speech.paused) {
+        voiceIsPaused = true;
+
+        pauseButton.setText("▶ Continuar voz");
+
+    } else {
         speech.resume();
-        pauseButton.setText('⏸ Pausar voz');
+        voiceIsPaused = false;
+
+        pauseButton.setText("⏸ Pausar voz");
     }
 });
-
     // Monta o texto que será narrado
     const quizSpeech = `Vamos ouvir o desafio. ${questionData.q} ` +
         options.map((option, index) =>
